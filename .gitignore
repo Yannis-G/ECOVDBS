@@ -1,5 +1,9 @@
-# Milvus Docker
+# Datasets
+data/**
+
+# Docker Volumes
 volumes/**
+# Milvus Dockerfile
 embedEtcd.yaml
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm,python
