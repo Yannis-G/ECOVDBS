@@ -11,7 +11,7 @@ bash standalone_embed.sh start
 ## Install Chroma in Docker
 
 ````bash
-docker run -d --name chromadb -p 8000:8000 -v "$PWD"/volumes/chroma/data:/chroma/chroma -e IS_PERSISTENT=TRUE -e ANONYMIZED_TELEMETRY=TRUE chromadb/chroma:latest
+docker run -d --name chromadb -p 8000:8000 -v "$PWD"/volumes/chroma/data:/chroma/chroma -e IS_PERSISTENT=TRUE -e ANONYMIZED_TELEMETRY=TRUE -e ALLOW_RESET=TRUE chromadb/chroma:latest
 ````
 
 ## Install Redis in Docker
