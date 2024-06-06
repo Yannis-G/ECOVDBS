@@ -143,7 +143,7 @@ if __name__ == '__main__':
     print(res)
 
 # Test for reading hdf5 file
-#    with h5py.File("D:\\Daten\\Yannis\\Bachelor\\bachelor-vd\\data\\glove-25-angular.hdf5", 'r') as f:
+#    with h5py.File(os.path.join(os.path.dirname(__file__), "../data/glove-25-angular.hdf5", 'r') as f:
 #
 #        # Access the dataset directly (assuming no subgroups)
 #        dset: h5py.Dataset = f['test']
