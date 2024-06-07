@@ -10,7 +10,7 @@ class ChromaClient(BaseClient):
     A client for interacting with a Chroma database. It extends BaseClient.
     """
 
-    def __init__(self, db_config: dict | None = None) -> None:
+    def __init__(self, dimension: int, db_config: dict | None = None) -> None:
         """
         Initialize the ChromaClient with a given database configuration.
 
@@ -20,7 +20,7 @@ class ChromaClient(BaseClient):
             db_config = ChromaConfig().to_dict()
 
         self.__db_config = db_config
-        self.__collection_name = "bvd"
+        self.__collection_name = "ecovdbs"
         self.__client = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
 
         # Ensure the client is alive by checking the heartbeat.
@@ -28,6 +28,7 @@ class ChromaClient(BaseClient):
 
         # Try to delete the collection if it already exists.
         try:
+            # Empties and completely resets the database. ⚠️
             self.__client.reset()
             self.__client.delete_collection(self.__collection_name)
         except Exception:
@@ -55,7 +56,6 @@ class ChromaClient(BaseClient):
         ids = [str(i) for i, _ in enumerate(embeddings)]
         batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings)
         for batch in batches:
-            print(len(batch[0]))
             self.__collection.add(ids=batch[0], embeddings=batch[1])
 
     def crate_index(self):

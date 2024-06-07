@@ -7,7 +7,7 @@ class BaseClient(ABC):
     """
 
     @abstractmethod
-    def __init__(self, db_config: dict) -> None:
+    def __init__(self, dimension: int, db_config: dict) -> None:
         """
         Initialize the database client with the given configuration.
 

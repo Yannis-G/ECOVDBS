@@ -4,6 +4,7 @@ from urllib.request import urlretrieve
 import numpy as np
 
 from client.chroma_client import ChromaClient
+from client.milvus_client import MilvusClient
 
 
 def download(src_url: str, dest_path: str) -> None:
@@ -104,7 +105,8 @@ if __name__ == '__main__':
     v_q = v_q.tolist()
 
     # Initialize ChromaClient and insert data
-    client = ChromaClient(128)
+    client = MilvusClient(128)
+    client.crate_index()
     client.insert(v_b)
 
     # Query and evaluate results
