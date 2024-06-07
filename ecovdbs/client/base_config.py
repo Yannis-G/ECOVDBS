@@ -15,17 +15,14 @@ class IndexType(Enum):
     """
     Enum for different types of indexes.
     """
-    HNSW = "HNSW"
-    DISKANN = "DISKANN"
+    Flat = "FLAT"
     IVFFlat = "IVF_FLAT"
     IVFSQ8 = "IVF_SQ8"
-    Flat = "FLAT"
+    IVFPQ = "IVF_PQ"
+    HNSW = "HNSW"
+    SCANN = "SCANN"
+    DISKANN = "DISKANN"
     AUTOINDEX = "AUTOINDEX"
-    ES_HNSW = "hnsw"
-    ES_IVFFlat = "ivfflat"
-    GPU_IVF_FLAT = "GPU_IVF_FLAT"
-    GPU_IVF_PQ = "GPU_IVF_PQ"
-    GPU_CAGRA = "GPU_CAGRA"
 
 
 class BaseConfig(ABC):
