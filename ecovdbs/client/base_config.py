@@ -49,7 +49,7 @@ class BaseIndexConfig(ABC):
     """
 
     @abstractmethod
-    def index_param(self) -> dict:
+    def index_param(self) -> dict | None:
         """
         Get the parameters for the index.
 
@@ -58,7 +58,7 @@ class BaseIndexConfig(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def search_param(self) -> dict:
+    def search_param(self) -> dict | None:
         """
         Get the parameters for search.
 

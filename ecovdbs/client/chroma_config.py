@@ -32,9 +32,10 @@ class ChromaIndexConfig(BaseIndexConfig):
     """
     Configuration class for the Chroma HNSW index.
     """
-    def __init__(self, metric_type: MetricType = MetricType.L2, construction_ef: int = 100, M: int = 16,
-                 search_ef: int = 10, num_threads: int | None = None, resize_factor: float = 1.2, batch_size: int = 100,
-                 sync_threshold: int = 1000) -> None:
+
+    def __init__(self, metric_type: MetricType | None = None, construction_ef: int | None = None, M: int | None = None,
+                 search_ef: int | None = None, num_threads: int | None = None, resize_factor: float | None = None,
+                 batch_size: int | None = None, sync_threshold: int | None = None) -> None:
         """
         Initialize the ChromaIndexConfig for the Chroma HNSW index with default values.
 
@@ -47,42 +48,51 @@ class ChromaIndexConfig(BaseIndexConfig):
         :param batch_size: Controls the size of the Bruteforce (in-memory) index. Once this threshold is crossed vectors from BF gets transferred to HNSW index. Default: 100
         :param sync_threshold: Controls the threshold when using HNSW index is written to disk. Default: 1000
         """
-        self.__space: MetricType = metric_type
-        assert construction_ef > 0, "construction_ef must be positive integer."
-        self.__construction_ef: int = construction_ef
-        assert M > 0, "M must be positive integer."
-        self.__M: int = M
-        assert search_ef > 0, "search_ef must be positive integer."
-        self.__search_ef: int = search_ef
+        self.__space: MetricType | None = metric_type
+        assert construction_ef is None or construction_ef > 0, "construction_ef must be positive integer."
+        self.__construction_ef: int | None = construction_ef
+        assert M is None or M > 0, "M must be positive integer."
+        self.__M: int | None = M
+        assert search_ef is None or search_ef > 0, "search_ef must be positive integer."
+        self.__search_ef: int | None = search_ef
         assert num_threads is None or num_threads > 0, "num_threads must be positive integer."
         self.__num_threads: int | None = num_threads
-        assert resize_factor > 0, "resize_factor must be positive floating point number."
-        self.__resize_factor: float = resize_factor
-        assert batch_size > 0, "batch_size must be positive integer."
-        self.__batch_size: int = batch_size
-        assert sync_threshold > 0, "sync_threshold must be positive integer."
-        self.__sync_threshold: int = sync_threshold
+        assert resize_factor is None or resize_factor > 0, "resize_factor must be positive floating point number."
+        self.__resize_factor: float | None = resize_factor
+        assert batch_size is None or batch_size > 0, "batch_size must be positive integer."
+        self.__batch_size: int | None = batch_size
+        assert sync_threshold is None or sync_threshold > 0, "sync_threshold must be positive integer."
+        self.__sync_threshold: int | None = sync_threshold
 
-    def index_param(self) -> dict:
+    def index_param(self) -> dict | None:
         """
         Generate the index parameters dictionary.
 
         :return: Dictionary containing the index parameters.
         """
         params: dict = {
-            "hnsw:space": self.__space.value.lower(),
-            "hnsw:construction_ef": self.__construction_ef,
-            "hnsw:M": self.__M,
-            "hnsw:search_ef": self.__search_ef,
-            "hnsw:resize_factor": self.__resize_factor,
-            "hnsw:batch_size": self.__batch_size,
-            "hnsw:sync_threshold": self.__sync_threshold
         }
+        if self.__space is not None:
+            params["hnsw:space"] = self.__space.value.lower()
+        if self.__construction_ef is not None:
+            params["hnsw:construction_ef"] = self.__construction_ef
+        if self.__M is not None:
+            params["hnsw:M"] = self.__M
+        if self.__search_ef is not None:
+            params["hnsw:search_ef"] = self.__search_ef
         if self.__num_threads is not None:
             params["hnsw:num_threads"] = self.__num_threads
-        return params
+        if self.__resize_factor is not None:
+            params["hnsw:resize_factor"] = self.__resize_factor
+        if self.__batch_size is not None:
+            params["hnsw:batch_size"] = self.__batch_size
+        if self.__sync_threshold is not None:
+            params["hnsw:sync_threshold"] = self.__sync_threshold
+        if params:
+            return params
+        return None
 
-    def search_param(self) -> dict:
+    def search_param(self) -> dict | None:
         """
         No search parameters needed for Chroma DB.
 
