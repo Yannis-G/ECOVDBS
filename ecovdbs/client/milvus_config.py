@@ -1,20 +1,18 @@
-from .base_config import BaseConfig
+from .base_config import BaseConfig, BaseIndexConfig
 
 
 class MilvusConfig(BaseConfig):
     """
-    Configuration class for Chroma database clients.
+    Configuration class for Milvus database clients.
     """
 
-    def __init__(self, host: str = "localhost", port: int = 19530) -> None:
+    def __init__(self, connection_uri: str = "http://localhost:19530") -> None:
         """
-        Initialize the ChromaConfig with default values.
+        Initialize the MilvusConfig with default values.
 
-        :param host: The hostname for the database server. Defaults to "localhost".
-        :param port: The port number for the database server. Defaults to 8000.
+        :param connection_uri: The connection URI for the Milvus server. Defaults to "http://localhost:19530".
         """
-        self.__host: str = host
-        self.__port: int = port
+        self.__uri = connection_uri
 
     def to_dict(self) -> dict:
         """
@@ -23,6 +21,5 @@ class MilvusConfig(BaseConfig):
         :return: The configuration as a dictionary.
         """
         return {
-            "host": self.__host,
-            "port": self.__port
+            "uri": self.__uri
         }

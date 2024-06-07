@@ -1,8 +1,9 @@
 import chromadb
+from chromadb import ClientAPI, Collection, QueryResult
 from chromadb.utils.batch_utils import create_batches
 
-from .base_client import BaseClient
-from .chroma_config import ChromaConfig
+from .base_client import BaseClient, BaseIndexConfig
+from .chroma_config import ChromaConfig, ChromaIndexConfig
 
 
 class ChromaClient(BaseClient):
@@ -10,18 +11,25 @@ class ChromaClient(BaseClient):
     A client for interacting with a Chroma database. It extends BaseClient.
     """
 
-    def __init__(self, dimension: int, db_config: dict | None = None) -> None:
+    def __init__(self, dimension: int, index_config: BaseIndexConfig | None = None,
+                 db_config: dict | None = None) -> None:
         """
         Initialize the ChromaClient with a given database configuration.
 
+        :param dimension: Not relevant! The first inserted vector decides the dimension of the collection
+        :param index_config: Configuration for the index.
         :param db_config: Configuration dictionary for the database connection.
         """
+        if index_config is None:
+            index_config = ChromaIndexConfig()
         if db_config is None:
             db_config = ChromaConfig().to_dict()
 
-        self.__db_config = db_config
-        self.__collection_name = "ecovdbs"
-        self.__client = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
+        self.__dimension: int = dimension
+        self.__index_config: BaseIndexConfig = index_config
+        self.__db_config: dict = db_config
+        self.__collection_name: str = "ecovdbs"
+        self.__client: ClientAPI = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
 
         # Ensure the client is alive by checking the heartbeat.
         assert self.__client.heartbeat() is not None
@@ -35,7 +43,8 @@ class ChromaClient(BaseClient):
             pass
 
         # Get or create the collection.
-        self.__collection = self.__client.get_or_create_collection(name=self.__collection_name)
+        self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
+                                                                               metadata=self.__index_config.index_param())
 
     def insert(self, embeddings: list[list[float]]) -> None:
         """
@@ -44,7 +53,7 @@ class ChromaClient(BaseClient):
         :param embeddings: List of embeddings to insert.
         """
         # self.__client.max_batch_size >> 41666
-        ids = [str(i) for i, _ in enumerate(embeddings)]
+        ids: list[str] = [str(i) for i, _ in enumerate(embeddings)]
         self.__collection.add(ids=ids, embeddings=embeddings)
 
     def batch_insert(self, embeddings: list[list[float]]) -> None:
@@ -53,7 +62,7 @@ class ChromaClient(BaseClient):
 
         :param embeddings: List of embeddings to insert.
         """
-        ids = [str(i) for i, _ in enumerate(embeddings)]
+        ids: list[str] = [str(i) for i, _ in enumerate(embeddings)]
         batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings)
         for batch in batches:
             self.__collection.add(ids=batch[0], embeddings=batch[1])
@@ -85,7 +94,7 @@ class ChromaClient(BaseClient):
 
         :param query: The query embedding.
         :param k: The number of results to return.
-        :return: The top k results from the query.
+        :return: The id of the top k results from the query.
         """
-        res = self.__collection.query(query_embeddings=query, n_results=k)
+        res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
         return [int(id) for id in res["ids"][0]]
