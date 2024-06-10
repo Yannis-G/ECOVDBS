@@ -51,12 +51,11 @@ class MilvusClient(BaseClient):
         """
         data = [{"id": i, "vector": v} for i, v in enumerate(embeddings)]
         self.__collection.insert(data=data)
+        self.__collection.flush()
 
     def batch_insert(self, embeddings: list[list[float]]) -> None:
         """
-        Insert embeddings into the collection in batches to improve efficiency.
-
-        :param embeddings: List of embeddings to insert.
+        Insert embeddings into the Milvus database in batches. Not implemented.
         """
         pass
 

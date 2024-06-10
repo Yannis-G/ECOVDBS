@@ -1,10 +1,15 @@
 import os.path
+import sys
 from urllib.request import urlretrieve
 
 import numpy as np
 
 from client.chroma_client import ChromaClient
 from client.milvus_client import MilvusClient
+from client.milvus_config import MilvusAutoIndexConfig, MilvusHNSWConfig
+from client.base_config import MetricType
+from client.redis_client import RedisClient
+from client.redis_config import RedisHNSWConfig
 
 
 def download(src_url: str, dest_path: str) -> None:
@@ -105,7 +110,7 @@ if __name__ == '__main__':
     v_q = v_q.tolist()
 
     # Initialize ChromaClient and insert data
-    client = MilvusClient(128)
+    client = RedisClient(128, RedisHNSWConfig(MetricType.L2))
     client.crate_index()
     client.insert(v_b)
 
@@ -120,6 +125,8 @@ if __name__ == '__main__':
     res.sort()
     print(v_gt[0])
     print(res)
+    client.disk_storage()
+    client.index_storage()
 
 # Test for reading hdf5 file
 #    with h5py.File(os.path.join(os.path.dirname(__file__), "../data/glove-25-angular.hdf5", 'r') as f:

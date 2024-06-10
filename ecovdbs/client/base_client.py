@@ -24,7 +24,6 @@ class BaseClient(ABC):
         Insert embeddings into the database.
 
         :param embeddings: List of embeddings to insert.
-        :return:
         """
         raise NotImplementedError
 
@@ -46,10 +45,20 @@ class BaseClient(ABC):
 
     @abstractmethod
     def disk_storage(self):
+        """
+        Get the disk storage used by the Redis database.
+
+        :return: Disk storage used in MB.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def index_storage(self):
+        """
+        Get the storage used by the index in the Redis database.
+
+        :return: Index storage used in MB.
+        """
         raise NotImplementedError
 
     @abstractmethod
