@@ -3,31 +3,45 @@ import psycopg
 from pgvector.psycopg import register_vector
 from psycopg import Connection, sql, Cursor
 
-from .base_client import BaseClient, BaseIndexConfig
-from .pgvector_config import PgvectorConfig
+from .base_client import BaseClient, BaseIndexConfig, BaseConfig
+from .pgvector_config import PgvectorConfig, PgvectorHNSWConfig, PgvectorIVFFlatConfig
 
 
 class PgvectorClient(BaseClient):
+    """
+    A client for interacting with a PostgreSQL database using the pgvector extension
+    (see https://github.com/pgvector/pgvector). Interface is the same as :class:`BaseClient`.
+    """
 
-    def __init__(self, dimension: int, index_config: BaseIndexConfig, db_config: dict | None = None) -> None:
-        if db_config is None:
-            db_config = PgvectorConfig().to_dict()
+    def __init__(self, dimension: int, index_config: BaseIndexConfig, db_config: BaseConfig = PgvectorConfig()) -> None:
+        """
+        Initialize the PgvectorClient with the specified parameters.
 
+        :param dimension: The dimensionality of the vectors.
+        :param index_config: Configuration for the index (see :class:`PgvectorHNSWConfig`
+            or :class:`PgvectorIVFFlatConfig`).
+        :param db_config: Configuration for the database connection (see :class:`PgvectorConfig`).
+        """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
-        self.__db_config: dict = db_config
+        self.__db_config: dict = db_config.to_dict()
         self.__table_name = "ecovdbs"
         self.__index_name = "idx:ecovdbs"
         self.__id_name = "id"
         self.__vector_name = "vector"
 
+        # Establish connection to PostgreSQL database
         self.__conn: Connection = psycopg.connect(
             f"host={self.__db_config['host']} port={self.__db_config['port']} dbname={self.__db_config['dbname']} user={self.__db_config['user']} password={self.__db_config['password']}")
+
+        # Ensure the vector extension is available
         self.__conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
         self.__conn.commit()
 
+        # Register the vector type for use in PostgreSQL
         register_vector(self.__conn)
 
+        # Drop the existing table and index if they exist
         drop_table = sql.SQL("DROP TABLE IF EXISTS {table_name};").format(table_name=sql.Identifier(self.__table_name))
         self.__conn.execute(drop_table)
         self.__conn.commit()
@@ -36,6 +50,7 @@ class PgvectorClient(BaseClient):
         self.__conn.execute(drop_index)
         self.__conn.commit()
 
+        # Create a new table with a vector column of the specified dimension
         create_table = (sql.SQL(
             "CREATE TABLE IF NOT EXISTS {table_name} ({id_name} bigserial PRIMARY KEY, {vector_name} vector({dimension}));").format(
             table_name=sql.Identifier(self.__table_name), id_name=sql.Identifier(self.__id_name),
@@ -43,17 +58,20 @@ class PgvectorClient(BaseClient):
         self.__conn.execute(create_table)
         self.__conn.commit()
 
-    def insert(self, embeddings: list[list[float]]) -> None:
+    def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
         cur: Cursor = self.__conn.cursor()
         with cur.copy(sql.SQL("COPY {table_name} ({id_name}, {vector_name}) FROM STDIN (FORMAT BINARY)").format(
                 table_name=sql.Identifier(self.__table_name), id_name=sql.Identifier(self.__id_name),
                 vector_name=sql.Identifier(self.__vector_name))) as copy:
             copy.set_types(["bigint", "vector"])
             for i, embedding in enumerate(embeddings):
-                copy.write_row((i, embedding))
+                copy.write_row((i + start_id, embedding))
         self.__conn.commit()
 
-    def batch_insert(self, embeddings: list[list[float]]) -> None:
+    def batch_insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+        """
+        Not implemented.
+        """
         pass
 
     def create_index(self) -> None:
@@ -76,6 +94,11 @@ class PgvectorClient(BaseClient):
         self.__conn.commit()
 
     def __set_param(self, param):
+        """
+        Set database parameters for index creation and search.
+
+        :param param: A dictionary of parameters to set.
+        """
         if param:
             for k, v in param.items():
                 command = sql.SQL("SET {key} = {val}").format(key=sql.Identifier(k), val=sql.Literal(v))
@@ -83,9 +106,15 @@ class PgvectorClient(BaseClient):
             self.__conn.commit()
 
     def disk_storage(self):
+        """
+        Not implemented.
+        """
         pass
 
     def index_storage(self):
+        """
+        Not implemented.
+        """
         pass
 
     def query(self, query: list[float], k: int) -> list[int]:

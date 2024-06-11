@@ -20,7 +20,8 @@ class RedisConfig(BaseConfig):
 
     def to_dict(self) -> dict:
         """
-        Convert the configuration to a dictionary.
+        Convert the configuration to a dictionary. The dictionary will have the keys host for the ``hostname`` of the
+        database server, ``port`` for th port for the database server and ``password`` for the password
 
         :return: The configuration as a dictionary.
         """
@@ -44,7 +45,8 @@ class RedisFlatConfig(BaseIndexConfig):
         :param metric_type: The metric type for distance calculation.
         :param data_type: The data type for the vectors. Must be either "FLOAT32" or "FLOAT64". Defaults to "FLOAT32".
         :param initial_cap: Initial vector capacity in the index affecting memory allocation size of the index.
-        :param block_size: Block size to hold BLOCK_SIZE amount of vectors in a contiguous array. This is useful when the index is dynamic with respect to addition and deletion.
+        :param block_size: Block size to hold BLOCK_SIZE amount of vectors in a contiguous array. This is useful when
+            the index is dynamic with respect to addition and deletion.
         """
         assert data_type in ["FLOAT32", "FLOAT64"]
         self.__type = data_type
@@ -55,9 +57,12 @@ class RedisFlatConfig(BaseIndexConfig):
 
     def index_param(self) -> dict | None:
         """
-        Get the parameters for the Flat index.
+        Generate the index parameters dictionary. The directory contain the keys ``index`` for the index and ``param``
+        for a  directory with params for the index. ``param`` contains the keys``TYPE`` and ``DISTANCE_METRIC`` and may
+        contain the keys ``INITIAL_CAP`` and ``BLOCK_SIZE`` if the value is different from the default value of the
+        database.
 
-        :return: The index parameters as a dictionary.
+        :return: A dictionary of index parameters.
         """
         param = {
             "TYPE": self.__type,
@@ -74,12 +79,11 @@ class RedisFlatConfig(BaseIndexConfig):
 
     def search_param(self) -> dict | None:
         """
-        No search parameters needed for Redis DB.
+        No need in Redis DB, only Params needed for index creation in the collection creation process
 
-        :return: NotImplementedError
+        :return: None
         """
-        raise NotImplementedError("No need in Redis DB, only Params needed for index creation in the collection "
-                                  "creation process")
+        return None
 
 
 class RedisHNSWConfig(BaseIndexConfig):
@@ -96,10 +100,15 @@ class RedisHNSWConfig(BaseIndexConfig):
         :param metric_type: The metric type for distance calculation.
         :param data_type: The data type for the vectors. Must be either "FLOAT32" or "FLOAT64". Defaults to "FLOAT32".
         :param initial_cap: Initial vector capacity in the index affecting memory allocation size of the index.
-        :param M: Number of maximum allowed outgoing edges for each node in the graph in each layer. on layer zero the maximal number of outgoing edges will be 2M..
-        :param ef_construction: Number of maximum allowed potential outgoing edges candidates for each node in the graph, during the graph building.
-        :param ef_runtime: Number of maximum top candidates to hold during the KNN search. Higher values of EF_RUNTIME lead to more accurate results at the expense of a longer runtime.
-        :param epsilon: Relative factor that sets the boundaries in which a range query may search for candidates. That is, vector candidates whose distance from the query vector is radius*(1 + EPSILON) are potentially scanned, allowing more extensive search and more accurate results (on the expense of runtime).
+        :param M: Number of maximum allowed outgoing edges for each node in the graph in each layer. on layer zero the
+            maximal number of outgoing edges will be 2M..
+        :param ef_construction: Number of maximum allowed potential outgoing edges candidates for each node in the
+            graph, during the graph building.
+        :param ef_runtime: Number of maximum top candidates to hold during the KNN search. Higher values of EF_RUNTIME
+            lead to more accurate results at the expense of a longer runtime.
+        :param epsilon: Relative factor that sets the boundaries in which a range query may search for candidates. That
+            is, vector candidates whose distance from the query vector is radius*(1 + EPSILON) are potentially scanned,
+            allowing more extensive search and more accurate results (on the expense of runtime).
         """
         assert data_type in ["FLOAT32", "FLOAT64"]
         self.__type = data_type
@@ -113,9 +122,12 @@ class RedisHNSWConfig(BaseIndexConfig):
 
     def index_param(self) -> dict | None:
         """
-        Get the parameters for the HNSW index.
+        Generate the index parameters dictionary. The directory contain the keys ``index`` for the index and ``param``
+        for a  directory with params for the index. ``param`` contains the keys``TYPE`` and ``DISTANCE_METRIC`` and may
+        contain the keys ``INITIAL_CAP``, ``M``, ``EF_CONSTRUCTION``, ``EF_RUNTIME``, ``EPSILON`` if the value is
+        different from the default value of the database.
 
-        :return: The index parameters as a dictionary.
+        :return: A dictionary of index parameters.
         """
         param = {
             "TYPE": self.__type,
@@ -138,9 +150,8 @@ class RedisHNSWConfig(BaseIndexConfig):
 
     def search_param(self) -> dict | None:
         """
-        No search parameters needed for Redis DB.
+        No need in Redis DB, only Params needed for index creation in the collection creation process
 
-        :return: NotImplementedError
+        :return: None
         """
-        raise NotImplementedError("No need in Redis DB, only Params needed for index creation in the collection "
-                                  "creation process")
+        return None

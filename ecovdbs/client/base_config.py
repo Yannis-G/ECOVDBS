@@ -5,6 +5,9 @@ from enum import Enum
 class MetricType(Enum):
     """
     Enum for different types of metrics.
+    L2 = Euclidean Distance
+    IP = Inner Product
+    COSINE = Cosine similarity
     """
     L2 = "L2"
     COSINE = "COSINE"

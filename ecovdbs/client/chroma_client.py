@@ -2,32 +2,28 @@ import chromadb
 from chromadb import ClientAPI, Collection, QueryResult
 from chromadb.utils.batch_utils import create_batches
 
-from .base_client import BaseClient, BaseIndexConfig
+from .base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .chroma_config import ChromaConfig, ChromaIndexConfig
 
 
 class ChromaClient(BaseClient):
     """
-    A client for interacting with a Chroma database. It extends BaseClient.
+    A client for interacting with a Chroma database (see https://docs.trychroma.com/). Interface is the same as
+    :class:`BaseClient`.
     """
 
-    def __init__(self, dimension: int, index_config: BaseIndexConfig | None = None,
-                 db_config: dict | None = None) -> None:
+    def __init__(self, dimension: int, index_config: BaseIndexConfig = ChromaIndexConfig(),
+                 db_config: BaseConfig = ChromaConfig()) -> None:
         """
         Initialize the ChromaClient with a given database configuration.
 
-        :param dimension: Not relevant! The first inserted vector decides the dimension of the collection
-        :param index_config: Configuration for the index.
-        :param db_config: Configuration dictionary for the database connection.
+        :param dimension: Not relevant! The first inserted vector decides the dimension of the collection.
+        :param index_config: Configuration for the index (see :class:`ChromaIndexConfig`).
+        :param db_config: Configuration for the database connection (see :class:`ChromaConfig`).
         """
-        if index_config is None:
-            index_config = ChromaIndexConfig()
-        if db_config is None:
-            db_config = ChromaConfig().to_dict()
-
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
-        self.__db_config: dict = db_config
+        self.__db_config: dict = db_config.to_dict()
         self.__collection_name: str = "ecovdbs"
         self.__client: ClientAPI = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
 
@@ -46,30 +42,22 @@ class ChromaClient(BaseClient):
         self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
                                                                                metadata=self.__index_config.index_param())
 
-    def insert(self, embeddings: list[list[float]]) -> None:
-        """
-        Insert embeddings into the collection.
-
-        :param embeddings: List of embeddings to insert.
-        """
+    def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
         # self.__client.max_batch_size >> 41666
-        ids: list[str] = [str(i) for i, _ in enumerate(embeddings)]
+        ids: list[str] = [str(i) for i in range(start_id, start_id + len(embeddings))]
         self.__collection.add(ids=ids, embeddings=embeddings)
 
-    def batch_insert(self, embeddings: list[list[float]]) -> None:
-        """
-        Insert embeddings into the collection in batches to improve efficiency.
-
-        :param embeddings: List of embeddings to insert.
-        """
-        ids: list[str] = [str(i) for i, _ in enumerate(embeddings)]
+    def batch_insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+        ids: list[str] = [str(i) for i in range(start_id, start_id + len(embeddings))]
         batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings)
         for batch in batches:
             self.__collection.add(ids=batch[0], embeddings=batch[1])
 
     def create_index(self):
-        # https://github.com/zylon-ai/private-gpt/discussions/563: Chroma DB automatically creates an index of the
-        # embeddings as they are inserted
+        """
+        Not implemented! Chroma DB automatically creates an index of the embeddings as they are inserted into the
+        collection. (https://github.com/zylon-ai/private-gpt/discussions/563)
+        """
         pass
 
     def disk_storage(self):
@@ -90,7 +78,7 @@ class ChromaClient(BaseClient):
 
     def query(self, query: list[float], k: int) -> list[int]:
         """
-        Query the collection with a given embedding and return the top k results.
+        Query the database with a given embedding and return the top k results.
 
         :param query: The query embedding.
         :param k: The number of results to return.

@@ -16,7 +16,7 @@ class MilvusConfig(BaseConfig):
 
     def to_dict(self) -> dict:
         """
-        Convert the configuration to a dictionary.
+        Convert the configuration to a dictionary. The dictionary will have the key ``uri`` for the connection URI.
 
         :return: The configuration as a dictionary.
         """

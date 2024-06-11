@@ -18,7 +18,8 @@ class ChromaConfig(BaseConfig):
 
     def to_dict(self) -> dict:
         """
-        Convert the configuration to a dictionary.
+        Convert the configuration to a dictionary. The dictionary will have the keys ``host`` for the hostname of the
+        database server and ``port`` for the port of the database server.
 
         :return: The configuration as a dictionary.
         """
@@ -40,12 +41,19 @@ class ChromaIndexConfig(BaseIndexConfig):
         Initialize the ChromaIndexConfig for the Chroma HNSW index with default values.
 
         :param metric_type: Controls the distance metric of the HNSW index. Default: L2
-        :param construction_ef: Controls the number of neighbours in the HNSW graph to explore when adding new vectors. The more neighbours HNSW explores the better and more exhaustive the results will be. Increasing the value will also increase memory consumption. Default: 100
-        :param M: Controls the maximum number of neighbour connections (M), a newly inserted vector. A higher value results in a mode densely connected graph. The impact on this is slower but more accurate searches with increased memory consumption. Default: 16
-        :param search_ef: Controls the number of neighbours in the HNSW graph to explore when searching. Increasing this requires more memory for the HNSW algo to explore the nodes during knn search. Default: 10
+        :param construction_ef: Controls the number of neighbours in the HNSW graph to explore when adding new vectors.
+            The more neighbours HNSW explores the better and more exhaustive the results will be. Increasing the value
+            will also increase memory consumption. Default: 100
+        :param M: Controls the maximum number of neighbour connections (M), a newly inserted vector. A higher value
+            results in a mode densely connected graph. The impact on this is slower but more accurate searches with
+            increased memory consumption. Default: 16
+        :param search_ef: Controls the number of neighbours in the HNSW graph to explore when searching. Increasing this
+            requires more memory for the HNSW algo to explore the nodes during knn search. Default: 10
         :param num_threads: Controls how many threads HNSW algo use. Default: <number of CPU cores>
-        :param resize_factor: Controls the rate of growth of the graph (e.g. how many node capacity will be added) whenever the current graph capacity is reached. Default: 1.2
-        :param batch_size: Controls the size of the Bruteforce (in-memory) index. Once this threshold is crossed vectors from BF gets transferred to HNSW index. Default: 100
+        :param resize_factor: Controls the rate of growth of the graph (e.g. how many node capacity will be added)
+            whenever the current graph capacity is reached. Default: 1.2
+        :param batch_size: Controls the size of the Bruteforce (in-memory) index. Once this threshold is crossed vectors
+            from BF gets transferred to HNSW index. Default: 100
         :param sync_threshold: Controls the threshold when using HNSW index is written to disk. Default: 1000
         """
         self.__space: MetricType | None = metric_type
@@ -66,9 +74,11 @@ class ChromaIndexConfig(BaseIndexConfig):
 
     def index_param(self) -> dict | None:
         """
-        Generate the index parameters dictionary.
+        Generate the index parameters dictionary. The directory may contain the keys ``hnsw:space``,
+        ``hnsw:construction_ef``, ``hnsw:M``, ``hnsw:search_ef``, ``hnsw:num_threads``, ``hnsw:batch_size``,
+        ``hnsw:sync_threshold``. The key is contained if the value is different from the default value of the database.
 
-        :return: Dictionary containing the index parameters.
+        :return: Dictionary containing the index parameters or None if only the default parameters are needed.
         """
         params: dict = {
         }
@@ -94,9 +104,8 @@ class ChromaIndexConfig(BaseIndexConfig):
 
     def search_param(self) -> dict | None:
         """
-        No search parameters needed for Chroma DB.
+        No need in Chroma DB, only Params needed for index creation in the collection creation process.
 
-        :return: NotImplementedError
+        :return: None
         """
-        raise NotImplementedError("No need in Chroma DB, only Params needed for index creation in the collection "
-                                  "creation process")
+        return None
