@@ -30,6 +30,10 @@ class RedisClient(BaseClient):
         self.__db_config: dict = db_config
         self.__index_name: str = "ecovdbs"
         self.__vector_name: str = "vector"
+        if self.__index_config.index_param()["param"]["TYPE"] == "FLOAT32":
+            self.__vector_dtype = np.float32
+        else:
+            self.__vector_dtype = np.float64
 
         # Initialize the Redis client
         self.__client: Redis = Redis(host=self.__db_config["host"], port=self.__db_config["port"],
@@ -46,7 +50,8 @@ class RedisClient(BaseClient):
         """
         pipeline = self.__client.pipeline()
         for i, embedding in enumerate(embeddings):
-            pipeline.json().set(i, "$", {self.__vector_name: embedding})
+            pipeline.hset(str(i),
+                          mapping={self.__vector_name: np.array(embedding).astype(self.__vector_dtype).tobytes()})
         pipeline.execute()
 
     def batch_insert(self, embeddings: list[list[float]]) -> None:
@@ -62,10 +67,10 @@ class RedisClient(BaseClient):
         param = self.__index_config.index_param()
         param["param"]["DIM"] = self.__dimension
         fields = [
-            VectorField(name=f"$.{self.__vector_name}", algorithm=param["index"], attributes=param["param"],
+            VectorField(name=self.__vector_name, algorithm=param["index"], attributes=param["param"],
                         as_name=self.__vector_name),
         ]
-        definition = IndexDefinition(index_type=IndexType.JSON)
+        definition = IndexDefinition(index_type=IndexType.HASH)
         self.__client.ft(self.__index_name).create_index(fields=fields, definition=definition)
 
     def disk_storage(self):
