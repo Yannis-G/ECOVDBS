@@ -59,7 +59,7 @@ class MilvusClient(BaseClient):
         """
         pass
 
-    def crate_index(self) -> None:
+    def create_index(self) -> None:
         """
         Create an index for the embeddings in the collection.
         """

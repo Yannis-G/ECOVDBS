@@ -56,7 +56,7 @@ class PgvectorClient(BaseClient):
     def batch_insert(self, embeddings: list[list[float]]) -> None:
         pass
 
-    def crate_index(self) -> None:
+    def create_index(self) -> None:
         index_param = self.__index_config.index_param()
         self.__set_param(index_param["set"])
         opt = []

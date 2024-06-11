@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     # Initialize ChromaClient and insert data
     client = PgvectorClient(128, PgvectorHNSWConfig(MetricType.L2, ef_search=100))
-    client.crate_index()
+    client.create_index()
     client.insert(v_b)
 
     # Query and evaluate results

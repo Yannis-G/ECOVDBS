@@ -37,7 +37,7 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def crate_index(self) -> None:
+    def create_index(self) -> None:
         """
         Create an index in the database.
         """

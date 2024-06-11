@@ -67,7 +67,7 @@ class ChromaClient(BaseClient):
         for batch in batches:
             self.__collection.add(ids=batch[0], embeddings=batch[1])
 
-    def crate_index(self):
+    def create_index(self):
         # https://github.com/zylon-ai/private-gpt/discussions/563: Chroma DB automatically creates an index of the
         # embeddings as they are inserted
         pass
