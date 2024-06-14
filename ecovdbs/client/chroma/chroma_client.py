@@ -34,7 +34,7 @@ class ChromaClient(BaseClient):
             client = docker.from_env()
             self.__container = client.containers.get(self.__db_config["container_name"])
             # Delete all subdirectories in the persistence directory
-            self.__container.exec_run(f"rm -R -- {self.__persistence_directory}/*/")
+            self.__container.exec_run(f"sh -c 'rm -R -- {self.__persistence_directory}/*/'")
         except NotFound | APIError:
             # TODO Errorhandling
             print("No Docker")
