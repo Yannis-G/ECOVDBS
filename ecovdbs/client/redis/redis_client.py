@@ -4,9 +4,9 @@ from redis.commands.search.field import VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 
-from .base_client import BaseClient, BaseConfig, BaseIndexConfig
-from .redis_config import RedisConfig, RedisFlatConfig, RedisHNSWConfig
-from .utility import bytes_to_mb
+from ..base.base_client import BaseClient, BaseConfig, BaseIndexConfig
+from .redis_config import RedisConfig
+from ..utility import bytes_to_mb
 
 
 class RedisClient(BaseClient):

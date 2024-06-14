@@ -1,7 +1,7 @@
 from pymilvus import DataType, connections, FieldSchema, CollectionSchema, Collection, utility, SearchResult
 
-from .base_client import BaseClient, BaseIndexConfig, BaseConfig
-from .milvus_config import MilvusConfig, MilvusAutoIndexConfig
+from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
+from .milvus_config import MilvusConfig
 
 
 class MilvusClient(BaseClient):

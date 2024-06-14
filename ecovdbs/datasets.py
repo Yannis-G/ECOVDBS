@@ -1,17 +1,9 @@
 import os.path
-import sys
 from urllib.request import urlretrieve
 
 import numpy as np
 
-from client.base_config import MetricType
-from client.chroma_client import ChromaClient
-from client.milvus_client import MilvusClient
-from client.milvus_config import MilvusAutoIndexConfig, MilvusHNSWConfig
-from client.redis_client import RedisClient
-from client.redis_config import RedisHNSWConfig
-from client.pgvector_client import PgvectorClient
-from client.pgvector_config import PgvectorHNSWConfig
+from client.chroma.chroma_client import ChromaClient
 
 
 def download(src_url: str, dest_path: str) -> None:

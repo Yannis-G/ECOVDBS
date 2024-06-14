@@ -4,9 +4,9 @@ from chromadb import ClientAPI, Collection, QueryResult
 from chromadb.utils.batch_utils import create_batches
 from docker.errors import NotFound, APIError
 
-from .base_client import BaseClient, BaseIndexConfig, BaseConfig
+from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .chroma_config import ChromaConfig, ChromaIndexConfig
-from .utility import bytes_to_mb
+from ..utility import bytes_to_mb
 
 
 class ChromaClient(BaseClient):

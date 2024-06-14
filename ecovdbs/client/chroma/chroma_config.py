@@ -1,4 +1,4 @@
-from .base_config import BaseConfig, BaseIndexConfig, MetricType
+from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType
 
 
 class ChromaConfig(BaseConfig):

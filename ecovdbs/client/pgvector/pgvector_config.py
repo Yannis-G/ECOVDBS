@@ -1,4 +1,4 @@
-from .base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType
+from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType
 
 
 class PgvectorConfig(BaseConfig):

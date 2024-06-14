@@ -1,10 +1,9 @@
-import numpy as np
 import psycopg
 from pgvector.psycopg import register_vector
 from psycopg import Connection, sql, Cursor
 
-from .base_client import BaseClient, BaseIndexConfig, BaseConfig
-from .pgvector_config import PgvectorConfig, PgvectorHNSWConfig, PgvectorIVFFlatConfig
+from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
+from .pgvector_config import PgvectorConfig
 
 
 class PgvectorClient(BaseClient):

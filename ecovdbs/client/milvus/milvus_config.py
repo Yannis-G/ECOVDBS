@@ -1,4 +1,4 @@
-from .base_config import BaseConfig, BaseIndexConfig, IndexType, MetricType
+from ..base.base_config import BaseConfig, BaseIndexConfig, IndexType, MetricType
 
 
 class MilvusConfig(BaseConfig):
