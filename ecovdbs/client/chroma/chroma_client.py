@@ -60,14 +60,14 @@ class ChromaClient(BaseClient):
         for batch in batches:
             self.__collection.add(ids=batch[0], embeddings=batch[1])
 
-    def create_index(self):
+    def create_index(self) -> float:
         """
         Not implemented! Chroma DB automatically creates an index of the embeddings as they are inserted into the
         collection. (https://github.com/zylon-ai/private-gpt/discussions/563)
         """
         pass
 
-    def disk_storage(self):
+    def disk_storage(self) -> float:
         """
         Only works if the database runs inside a docker container and the name passed in the config!
         Get the disk storage used by the database. The persistence directory consists of two files: the

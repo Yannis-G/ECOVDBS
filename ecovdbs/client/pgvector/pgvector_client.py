@@ -105,7 +105,7 @@ class PgvectorClient(BaseClient):
                 self.__conn.execute(command)
             self.__conn.commit()
 
-    def disk_storage(self):
+    def disk_storage(self) -> float:
         """
         Get the disk storage used by the database. Returns the total on-disk size of the used relation, including data
         and any indexes. It returns the sum of the table size and the index size.
@@ -118,7 +118,7 @@ class PgvectorClient(BaseClient):
         res = self.__conn.execute(database_size_query)
         return bytes_to_mb(res.fetchall()[0][0])
 
-    def index_storage(self):
+    def index_storage(self) -> float:
         database_size_query = sql.SQL("SELECT pg_relation_size({index_name})").format(
             index_name=sql.Literal(self.__index_name))
         res = self.__conn.execute(database_size_query)

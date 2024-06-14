@@ -48,7 +48,7 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def disk_storage(self):
+    def disk_storage(self) -> float:
         """
         Get the disk storage used by the database.
 
@@ -57,7 +57,7 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def index_storage(self):
+    def index_storage(self) -> float:
         """
         Get the storage used by the index in the database.
 

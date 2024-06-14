@@ -64,10 +64,11 @@ class RedisClient(BaseClient):
         definition = IndexDefinition(index_type=IndexType.HASH)
         self.__client.ft(self.__index_name).create_index(fields=fields, definition=definition)
 
-    def disk_storage(self):
+    def disk_storage(self) -> float:
+        # The size in bytes of the dataset (used_memory_overhead subtracted from used_memory)
         return bytes_to_mb(self.__client.info("memory")["used_memory_dataset"])
 
-    def index_storage(self):
+    def index_storage(self) -> float:
         return self.__client.ft(self.__index_name).info()["vector_index_sz_mb"]
 
     def query(self, query: list[float], k: int) -> list[int]:
