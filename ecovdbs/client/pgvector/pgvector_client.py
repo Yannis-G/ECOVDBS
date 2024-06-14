@@ -4,6 +4,7 @@ from psycopg import Connection, sql, Cursor
 
 from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .pgvector_config import PgvectorConfig
+from ..utility import bytes_to_mb
 
 
 class PgvectorClient(BaseClient):
@@ -106,15 +107,22 @@ class PgvectorClient(BaseClient):
 
     def disk_storage(self):
         """
-        Not implemented.
+        Get the disk storage used by the database. Returns the total on-disk size of the used relation, including data
+        and any indexes. It returns the sum of the table size and the index size.
+
+        :return: Disk storage used in MB.
         """
-        pass
+        # https://stackoverflow.com/questions/41991380/whats-the-difference-between-pg-table-size-pg-relation-size-pg-total-relatio/70397779#70397779
+        database_size_query = sql.SQL("SELECT pg_total_relation_size({table_name})").format(
+            table_name=sql.Literal(self.__table_name))
+        res = self.__conn.execute(database_size_query)
+        return bytes_to_mb(res.fetchall()[0][0])
 
     def index_storage(self):
-        """
-        Not implemented.
-        """
-        pass
+        database_size_query = sql.SQL("SELECT pg_relation_size({index_name})").format(
+            index_name=sql.Literal(self.__index_name))
+        res = self.__conn.execute(database_size_query)
+        return bytes_to_mb(res.fetchall()[0][0])
 
     def query(self, query: list[float], k: int) -> list[int]:
         search_param = self.__index_config.search_param()
