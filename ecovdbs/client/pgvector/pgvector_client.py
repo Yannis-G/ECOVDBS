@@ -1,3 +1,5 @@
+import logging
+
 import psycopg
 from pgvector.psycopg import register_vector
 from psycopg import Connection, sql, Cursor
@@ -5,6 +7,8 @@ from psycopg import Connection, sql, Cursor
 from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .pgvector_config import PgvectorConfig
 from ..utility import bytes_to_mb
+
+log = logging.getLogger(__name__)
 
 
 class PgvectorClient(BaseClient):
@@ -57,8 +61,10 @@ class PgvectorClient(BaseClient):
             vector_name=sql.Identifier(self.__vector_name), dimension=dimension))
         self.__conn.execute(create_table)
         self.__conn.commit()
+        log.info("Pgvector client initialized")
 
     def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+        log.info(f"Inserting {len(embeddings)} vectors into database")
         cur: Cursor = self.__conn.cursor()
         with cur.copy(sql.SQL("COPY {table_name} ({id_name}, {vector_name}) FROM STDIN (FORMAT BINARY)").format(
                 table_name=sql.Identifier(self.__table_name), id_name=sql.Identifier(self.__id_name),
@@ -76,6 +82,7 @@ class PgvectorClient(BaseClient):
 
     def create_index(self) -> None:
         index_param = self.__index_config.index_param()
+        log.info(f"Creating index {self.__index_config.index_param()}")
         self.__set_param(index_param["set"])
         opt = []
         if index_param["with"]:
@@ -125,6 +132,7 @@ class PgvectorClient(BaseClient):
         return bytes_to_mb(res.fetchall()[0][0])
 
     def query(self, query: list[float], k: int) -> list[int]:
+        log.info(f"Query {query} with {k} vectors")
         search_param = self.__index_config.search_param()
         self.__set_param(search_param["set"])
         select = sql.Composed([

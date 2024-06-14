@@ -1,7 +1,11 @@
+import logging
+
 from pymilvus import DataType, connections, FieldSchema, CollectionSchema, Collection, utility, SearchResult
 
 from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .milvus_config import MilvusConfig
+
+log = logging.getLogger(__name__)
 
 
 class MilvusClient(BaseClient):
@@ -41,8 +45,10 @@ class MilvusClient(BaseClient):
 
         # Create the collection with the defined schema
         self.__collection: Collection = Collection(self.__collection_name, schema)
+        log.info("Milvus client initialized")
 
     def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+        log.info(f"Inserting {len(embeddings)} vectors into database")
         data = [{"id": start_id + i, "vector": v} for i, v in enumerate(embeddings)]
         self.__collection.insert(data=data)
         self.__collection.flush()
@@ -55,6 +61,7 @@ class MilvusClient(BaseClient):
 
     def create_index(self) -> None:
         index_param: dict = self.__index_config.index_param()
+        log.info(f"Creating index {self.__index_config.index_param()}")
         self.__collection.create_index(self.__vector_name, index_param)
 
     def disk_storage(self):
@@ -70,6 +77,7 @@ class MilvusClient(BaseClient):
         pass
 
     def query(self, query: list[float], k: int) -> list[int]:
+        log.info(f"Query {query} with {k} vectors")
         search_param: dict = self.__index_config.search_param()
         self.__collection.load()
         res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name, param=search_param,

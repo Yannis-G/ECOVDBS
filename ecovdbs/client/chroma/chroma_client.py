@@ -1,5 +1,6 @@
 import chromadb
 import docker
+import logging
 from chromadb import ClientAPI, Collection, QueryResult
 from chromadb.utils.batch_utils import create_batches
 from docker.errors import NotFound, APIError
@@ -7,6 +8,8 @@ from docker.errors import NotFound, APIError
 from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .chroma_config import ChromaConfig, ChromaIndexConfig
 from ..utility import bytes_to_mb
+
+log = logging.getLogger(__name__)
 
 
 class ChromaClient(BaseClient):
@@ -30,17 +33,17 @@ class ChromaClient(BaseClient):
         self.__collection_name: str = "ecovdbs"
         self.__persistence_directory = "/chroma/chroma"
         self.__client: ClientAPI = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
+
+        # Ensure the client is alive by checking the heartbeat.
+        assert self.__client.heartbeat() is not None
+
         try:
             client = docker.from_env()
             self.__container = client.containers.get(self.__db_config["container_name"])
             # Delete all subdirectories in the persistence directory
             self.__container.exec_run(f"sh -c 'rm -R -- {self.__persistence_directory}/*/'")
         except NotFound | APIError:
-            # TODO Errorhandling
-            print("No Docker")
-
-        # Ensure the client is alive by checking the heartbeat.
-        assert self.__client.heartbeat() is not None
+            log.error(f"Could not find the database container with the name {self.__db_config['container_name']}")
 
         # Empties and completely resets the database. ⚠️
         self.__client.reset()
@@ -48,13 +51,16 @@ class ChromaClient(BaseClient):
         # Get or create the collection.
         self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
                                                                                metadata=self.__index_config.index_param())
+        log.info("Chroma client initialized")
 
     def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+        log.info(f"Inserting {len(embeddings)} vectors into database")
         # self.__client.max_batch_size >> 41666
         ids: list[str] = [str(i) for i in range(start_id, start_id + len(embeddings))]
         self.__collection.add(ids=ids, embeddings=embeddings)
 
     def batch_insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+        log.info(f"Inserting {len(embeddings)} vectors into database")
         ids: list[str] = [str(i) for i in range(start_id, start_id + len(embeddings))]
         batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings)
         for batch in batches:
@@ -88,6 +94,7 @@ class ChromaClient(BaseClient):
         """
         # Return -1 if the Docker container is not available
         if not self.__container:
+            log.error("The database container was not found.")
             return -1
         # Execute the 'du' command within the Docker container to get the size of the specified path
         result = self.__container.exec_run(f"du -sb {path}")
@@ -97,6 +104,7 @@ class ChromaClient(BaseClient):
             size_in_bytes = int(output.split()[0])
             return size_in_bytes
         else:
+            log.error(f"The database container returned an error: {result.exit_code}")
             return -1
 
     def index_storage(self):
@@ -121,5 +129,6 @@ class ChromaClient(BaseClient):
         :param k: The number of results to return.
         :return: The id of the top k results from the query.
         """
+        log.info(f"Query {query} with {k} vectors")
         res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
         return [int(id) for id in res["ids"][0]]

@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from redis import Redis
 from redis.commands.search.field import VectorField
@@ -7,6 +9,8 @@ from redis.commands.search.query import Query
 from ..base.base_client import BaseClient, BaseConfig, BaseIndexConfig
 from .redis_config import RedisConfig
 from ..utility import bytes_to_mb
+
+log = logging.getLogger(__name__)
 
 
 class RedisClient(BaseClient):
@@ -40,8 +44,10 @@ class RedisClient(BaseClient):
 
         # Flush the database to ensure it's empty
         self.__client.flushdb()
+        log.info("Redis client initialized")
 
     def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+        log.info(f"Inserting {len(embeddings)} vectors into database")
         pipeline = self.__client.pipeline()
         for i, embedding in enumerate(embeddings):
             pipeline.hset(str(i + start_id),
@@ -56,6 +62,7 @@ class RedisClient(BaseClient):
 
     def create_index(self) -> None:
         param = self.__index_config.index_param()
+        log.info(f"Creating index {self.__index_config.index_param()}")
         param["param"]["DIM"] = self.__dimension
         fields = [
             VectorField(name=self.__vector_name, algorithm=param["index"], attributes=param["param"],
@@ -79,6 +86,7 @@ class RedisClient(BaseClient):
         :param k: The number of results to return.
         :return: The id of the top k results from the query.
         """
+        log.info(f"Query {query} with {k} vectors")
         redis_query = Query(f"(*)=>[KNN {k} @{self.__vector_name} $query_vector AS vector_score]").sort_by(
             "vector_score").return_fields("vector_score", "id").paging(0, k).dialect(2)
         res = self.__client.ft(self.__index_name).search(redis_query, {
