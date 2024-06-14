@@ -6,7 +6,7 @@ class ChromaConfig(BaseConfig):
     Configuration class for Chroma database clients.
     """
 
-    def __init__(self, host: str = "localhost", port: int = 8000) -> None:
+    def __init__(self, host: str = "localhost", port: int = 8000, container_name = "chromadb") -> None:
         """
         Initialize the ChromaConfig with default values.
 
@@ -15,17 +15,20 @@ class ChromaConfig(BaseConfig):
         """
         self.__host: str = host
         self.__port: int = port
+        self.__container_name: str = container_name
 
     def to_dict(self) -> dict:
         """
         Convert the configuration to a dictionary. The dictionary will have the keys ``host`` for the hostname of the
-        database server and ``port`` for the port of the database server.
+        database server, ``port`` for the port of the database server and ``container_name`` for the name of the docker
+        container.
 
         :return: The configuration as a dictionary.
         """
         return {
             "host": self.__host,
-            "port": self.__port
+            "port": self.__port,
+            "container_name": self.__container_name,
         }
 
 

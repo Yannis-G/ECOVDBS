@@ -1,6 +1,8 @@
 import chromadb
+import docker
 from chromadb import ClientAPI, Collection, QueryResult
 from chromadb.utils.batch_utils import create_batches
+from docker.errors import NotFound, APIError
 
 from .base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .chroma_config import ChromaConfig, ChromaIndexConfig
@@ -25,18 +27,22 @@ class ChromaClient(BaseClient):
         self.__index_config: BaseIndexConfig = index_config
         self.__db_config: dict = db_config.to_dict()
         self.__collection_name: str = "ecovdbs"
+        self.__persistence_directory = "/chroma/chroma"
         self.__client: ClientAPI = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
+        try:
+            client = docker.from_env()
+            self.__container = client.containers.get(self.__db_config["container_name"])
+            # Delete all subdirectories in the persistence directory
+            self.__container.exec_run(f"rm -R -- {self.__persistence_directory}/*/")
+        except NotFound | APIError:
+            # TODO Errorhandling
+            print("No Docker")
 
         # Ensure the client is alive by checking the heartbeat.
         assert self.__client.heartbeat() is not None
 
-        # Try to delete the collection if it already exists.
-        try:
-            # Empties and completely resets the database. ⚠️
-            self.__client.reset()
-            self.__client.delete_collection(self.__collection_name)
-        except Exception:
-            pass
+        # Empties and completely resets the database. ⚠️
+        self.__client.reset()
 
         # Get or create the collection.
         self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
@@ -61,20 +67,50 @@ class ChromaClient(BaseClient):
         pass
 
     def disk_storage(self):
-        # https://cookbook.chromadb.dev/core/storage-layout/: The persistence directory consists of two files: the
-        # `chroma.sqlite3` and the folder named after the collections UUID for the HNSW index. As I understand it,
-        # only metadata is stored in the SQLite, and the index along with all vectors is stored in the directory.
-        # Therefore, it is not possible to determine how much memory the index consumes versus how much memory the
-        # vectors consume. https://cookbook.chromadb.dev/core/resources/: According to the formula, one needs n * d *
-        # 4 bytes of RAM for the index. The disk space depends on the metadata and the number of vectors. According
-        # to heuristics, 2-4 * RAM is needed for the HNSW index.
-        # https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index: The index is stored in a subdir of
-        # your persistent dir, named after the collection id (UUID-based).
-        pass
+        """
+        Only works if the database runs inside a docker container and the name passed in the config!
+        Get the disk storage used by the database. The persistence directory consists of two files: the
+        `chroma.sqlite3` and the folder named after the collections UUID for the HNSW index.
+        (https://cookbook.chromadb.dev/core/storage-layout/) This method returns the size of the howl persistence
+        directory.
+
+        :return: Disk storage used in MB. If the value is negativ the docker container during __init__ was not found.
+        """
+        return self.__get_size_of(self.__persistence_directory) / 1024 / 1024
+
+    def __get_size_of(self, path: str) -> int:
+        """
+        Get the size of a directory or file within the Docker container.
+
+        :param path: Path to the directory or file within the container.
+        :return: Size in bytes. If the container is not available, return -1.
+        """
+        # Return -1 if the Docker container is not available
+        if not self.__container:
+            return -1
+        # Execute the 'du' command within the Docker container to get the size of the specified path
+        result = self.__container.exec_run(f"du -sb {path}")
+        # Check if the command executed successfully
+        if result.exit_code == 0:
+            output = result.output.decode("utf-8").strip()
+            size_in_bytes = int(output.split()[0])
+            return size_in_bytes
+        else:
+            return -1
 
     def index_storage(self):
-        # See disk_storage
-        pass
+        """
+        Only works if the database runs inside a docker container and the name passed in the config!
+        Get the storage used by the index in the database. The persistence directory consists of two files: the
+        `chroma.sqlite3` and the folder named after the collections UUID for the HNSW index.
+        (https://cookbook.chromadb.dev/core/storage-layout/) This method returns the size of thd folder for the HNSW
+        index.
+
+        :return: Index storage used in MB. If the value is negativ the docker container during __init__ was not found.
+        """
+        total_size = self.__get_size_of(self.__persistence_directory)
+        sqlite_size = self.__get_size_of(f"{self.__persistence_directory}/chroma.sqlite3")
+        return (total_size - sqlite_size) / 1024 / 1024
 
     def query(self, query: list[float], k: int) -> list[int]:
         """
