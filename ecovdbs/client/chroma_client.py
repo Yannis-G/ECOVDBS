@@ -6,6 +6,7 @@ from docker.errors import NotFound, APIError
 
 from .base_client import BaseClient, BaseIndexConfig, BaseConfig
 from .chroma_config import ChromaConfig, ChromaIndexConfig
+from .utility import bytes_to_mb
 
 
 class ChromaClient(BaseClient):
@@ -76,7 +77,7 @@ class ChromaClient(BaseClient):
 
         :return: Disk storage used in MB. If the value is negativ the docker container during __init__ was not found.
         """
-        return self.__get_size_of(self.__persistence_directory) / 1024 / 1024
+        return bytes_to_mb(self.__get_size_of(self.__persistence_directory))
 
     def __get_size_of(self, path: str) -> int:
         """
@@ -110,7 +111,7 @@ class ChromaClient(BaseClient):
         """
         total_size = self.__get_size_of(self.__persistence_directory)
         sqlite_size = self.__get_size_of(f"{self.__persistence_directory}/chroma.sqlite3")
-        return (total_size - sqlite_size) / 1024 / 1024
+        return bytes_to_mb(total_size - sqlite_size)
 
     def query(self, query: list[float], k: int) -> list[int]:
         """

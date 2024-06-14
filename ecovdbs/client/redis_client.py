@@ -6,6 +6,7 @@ from redis.commands.search.query import Query
 
 from .base_client import BaseClient, BaseConfig, BaseIndexConfig
 from .redis_config import RedisConfig, RedisFlatConfig, RedisHNSWConfig
+from .utility import bytes_to_mb
 
 
 class RedisClient(BaseClient):
@@ -64,7 +65,7 @@ class RedisClient(BaseClient):
         self.__client.ft(self.__index_name).create_index(fields=fields, definition=definition)
 
     def disk_storage(self):
-        return self.__client.info("memory")["used_memory_dataset"] / 1024 / 1024
+        return bytes_to_mb(self.__client.info("memory")["used_memory_dataset"])
 
     def index_storage(self):
         return self.__client.ft(self.__index_name).info()["vector_index_sz_mb"]
