@@ -3,8 +3,6 @@ from urllib.request import urlretrieve
 
 import numpy as np
 
-from client.chroma.chroma_client import ChromaClient
-
 
 def download(src_url: str, dest_path: str) -> None:
     """
@@ -86,52 +84,3 @@ def __xvecs_read(filename, dtype: np.int32 | np.float32, bounds=None):
         v = v[1:, :]
 
     return v.T  # Transpose to have each vector stored in a row
-
-
-# Datasource http://corpus-texmex.irisa.fr/
-if __name__ == '__main__':
-    # Example usage:
-    filename_gt = os.path.join(os.path.dirname(__file__), "../data/siftsmall/siftsmall_groundtruth.ivecs")
-    filename_b = os.path.join(os.path.dirname(__file__), "../data/siftsmall/siftsmall_base.fvecs")
-    filename_q = os.path.join(os.path.dirname(__file__), "../data/siftsmall/siftsmall_query.fvecs")
-
-    # Read files into arrays
-    v_gt = ivecs_read(filename_gt)
-    v_b = fvecs_read(filename_b)
-    v_q = fvecs_read(filename_q)
-    v_gt = v_gt.tolist()
-    v_b = v_b.tolist()
-    v_q = v_q.tolist()
-
-    # Initialize ChromaClient and insert data
-    client = ChromaClient(128)
-    client.create_index()
-    client.insert(v_b)
-
-    # Query and evaluate results
-    res = client.query(v_q[0], 100)
-    c = 0
-    for id in res:
-        if v_gt[0].__contains__(int(id)):
-            c += 1
-    print(c)
-    v_gt[0].sort()
-    res.sort()
-    print(v_gt[0])
-    print(res)
-    print(client.disk_storage())
-    print(client.index_storage())
-
-# Test for reading hdf5 file
-#    with h5py.File(os.path.join(os.path.dirname(__file__), "../data/glove-25-angular.hdf5", 'r') as f:
-#
-#        # Access the dataset directly (assuming no subgroups)
-#        dset: h5py.Dataset = f['test']
-#        print(list(dset))
-#        print(dset[2].nbytes)
-#        sum = 0
-#        for key in f.keys():
-#            dset: h5py.Dataset = f[key]
-#            sum += dset.nbytes
-#            print(f"Key: {key} Size: {dset.nbytes}")
-#        print(sum)
