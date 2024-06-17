@@ -32,6 +32,7 @@ class PgvectorClient(BaseClient):
         self.__table_name = "ecovdbs"
         self.__index_name = "idx:ecovdbs"
         self.__id_name = "id"
+        self.__metadata_name = "metadata"
         self.__vector_name = "vector"
 
         # Establish connection to PostgreSQL database
@@ -56,25 +57,31 @@ class PgvectorClient(BaseClient):
 
         # Create a new table with a vector column of the specified dimension
         create_table = (sql.SQL(
-            "CREATE TABLE IF NOT EXISTS {table_name} ({id_name} bigserial PRIMARY KEY, {vector_name} vector({dimension}));").format(
+            "CREATE TABLE IF NOT EXISTS {table_name} ({id_name} bigserial PRIMARY KEY, {vector_name} vector({dimension}), {metadata_name} text);").format(
             table_name=sql.Identifier(self.__table_name), id_name=sql.Identifier(self.__id_name),
-            vector_name=sql.Identifier(self.__vector_name), dimension=dimension))
+            vector_name=sql.Identifier(self.__vector_name), dimension=dimension,
+            metadata_name=sql.Identifier(self.__metadata_name)))
         self.__conn.execute(create_table)
         self.__conn.commit()
         log.info("Pgvector client initialized")
 
-    def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
         log.info(f"Inserting {len(embeddings)} vectors into database")
+        if not metadata or len(metadata) != len(embeddings):
+            metadata = ["" for _ in range(len(embeddings))]
         cur: Cursor = self.__conn.cursor()
-        with cur.copy(sql.SQL("COPY {table_name} ({id_name}, {vector_name}) FROM STDIN (FORMAT BINARY)").format(
-                table_name=sql.Identifier(self.__table_name), id_name=sql.Identifier(self.__id_name),
-                vector_name=sql.Identifier(self.__vector_name))) as copy:
-            copy.set_types(["bigint", "vector"])
+        with cur.copy(
+                sql.SQL(
+                    "COPY {table_name} ({id_name}, {vector_name}, {metadata_name}) FROM STDIN (FORMAT BINARY)").format(
+                    table_name=sql.Identifier(self.__table_name), id_name=sql.Identifier(self.__id_name),
+                    vector_name=sql.Identifier(self.__vector_name),
+                    metadata_name=sql.Identifier(self.__metadata_name))) as copy:
+            copy.set_types(["bigint", "vector", "text"])
             for i, embedding in enumerate(embeddings):
-                copy.write_row((i + start_id, embedding))
+                copy.write_row((i + start_id, embedding, metadata[i]))
         self.__conn.commit()
 
-    def batch_insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
         """
         Not implemented.
         """
@@ -131,17 +138,23 @@ class PgvectorClient(BaseClient):
         res = self.__conn.execute(database_size_query)
         return bytes_to_mb(res.fetchall()[0][0])
 
-    def query(self, query: list[float], k: int) -> list[int]:
-        log.info(f"Query {query} with {k} vectors")
+    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
+        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
         search_param = self.__index_config.search_param()
         self.__set_param(search_param["set"])
+        where = sql.SQL("WHERE {metadata_name} = {keyword_filter} ").format(
+            metadata_name=sql.Identifier(self.__metadata_name),
+            keyword_filter=sql.Literal(keyword_filter)) if keyword_filter else sql.Composed(())
         select = sql.Composed([
             sql.SQL(
-                "SELECT {id_name} FROM {table_name} ORDER BY {vector_name} ").format(
-                id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
-                vector_name=sql.Identifier(self.__vector_name)),
+                "SELECT {id_name} FROM {table_name} ").format(
+                id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name)),
+            where,
+            sql.SQL("ORDER BY {vector_name} ").format(vector_name=sql.Identifier(self.__vector_name)),
             sql.SQL(search_param["metric_operator"]),
             sql.SQL(" %s::vector LIMIT %s::int")
         ])
+        # TODO Reihenfolge der Bearbeitung anders als erwartet. Es werden nicht alle Dateien mit WHERE sortiert und
+        #  limitiert sondern alle sortierten limitierten mit where zurückgegeben
         res = self.__conn.execute(select, (query, k))
         return [int(r[0]) for r in res.fetchall()]

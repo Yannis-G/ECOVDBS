@@ -27,6 +27,7 @@ class MilvusClient(BaseClient):
         self.__db_config: dict = db_config.to_dict()
         self.__collection_name: str = "ecovdbs"
         self.__id_name: str = "id"
+        self.__metadata_name: str = "metadata"
         self.__vector_name: str = "vector"
 
         # Connect to the Milvus server
@@ -39,6 +40,7 @@ class MilvusClient(BaseClient):
         # Define the schema for the collection
         fields: list[FieldSchema] = [
             FieldSchema(name=self.__id_name, dtype=DataType.INT64, is_primary=True, auto_id=False),
+            FieldSchema(name=self.__metadata_name, dtype=DataType.VARCHAR, max_length=100),
             FieldSchema(name=self.__vector_name, dtype=DataType.FLOAT_VECTOR, dim=self.__dimension),
         ]
         schema: CollectionSchema = CollectionSchema(fields)
@@ -47,13 +49,18 @@ class MilvusClient(BaseClient):
         self.__collection: Collection = Collection(self.__collection_name, schema)
         log.info("Milvus client initialized")
 
-    def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
         log.info(f"Inserting {len(embeddings)} vectors into database")
-        data = [{"id": start_id + i, "vector": v} for i, v in enumerate(embeddings)]
+        if not metadata or len(metadata) != len(embeddings):
+            metadata = ["" for _ in range(len(embeddings))]
+
+        data = [{self.__id_name: start_id + i,
+                 self.__metadata_name: metadata[i],
+                 self.__vector_name: v} for i, v in enumerate(embeddings)]
         self.__collection.insert(data=data)
         self.__collection.flush()
 
-    def batch_insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
         """
         Not implemented.
         """
@@ -76,10 +83,11 @@ class MilvusClient(BaseClient):
         """
         pass
 
-    def query(self, query: list[float], k: int) -> list[int]:
-        log.info(f"Query {query} with {k} vectors")
+    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
+        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
         search_param: dict = self.__index_config.search_param()
         self.__collection.load()
-        res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name, param=search_param,
-                                                     limit=k)
+        expr = f'{self.__metadata_name} == "{keyword_filter}"' if keyword_filter else None
+        res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name,
+                                                     param=search_param, limit=k, expr=expr)
         return [result.id for result in res[0]]

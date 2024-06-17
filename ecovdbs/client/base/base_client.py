@@ -19,23 +19,25 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
         """
         Insert embeddings into the database. The ids for the vector a starting with ``start_id`` and a counted
         upwards.
 
         :param embeddings: List of embeddings to insert.
+        :param metadata: List of metadata to insert.
         :param start_id: Index of the first inserted vector.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def batch_insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
         """
         Insert embeddings into the database in batches to improve efficiency. The ids for the vector a starting with
         ``start_id`` and a counted upwards.
 
         :param embeddings: List of embeddings to insert.
+        :param metadata: List of metadata to insert.
         :param start_id: Index of the first inserted vector.
         """
         raise NotImplementedError
@@ -66,13 +68,15 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def query(self, query: list[float], k: int) -> list[int]:
+    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
         """
         Query the database with a given embedding and return the top k results. For details of the search parameters see
         the documentation of the given index configuration in __init__.
 
         :param query: The query embedding.
         :param k: The number of results to return.
+        :param keyword_filter: A keyword-based filter to restrict the results. The metadate field of the result is equal
+            to keyword_filter
         :return: The id of the top k results from the query.
         """
         raise NotImplementedError

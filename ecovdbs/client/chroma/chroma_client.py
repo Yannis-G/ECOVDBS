@@ -31,6 +31,7 @@ class ChromaClient(BaseClient):
         self.__index_config: BaseIndexConfig = index_config
         self.__db_config: dict = db_config.to_dict()
         self.__collection_name: str = "ecovdbs"
+        self.__metadata_field: str = "metadata"
         self.__persistence_directory = "/chroma/chroma"
         self.__client: ClientAPI = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
 
@@ -53,18 +54,34 @@ class ChromaClient(BaseClient):
                                                                                metadata=self.__index_config.index_param())
         log.info("Chroma client initialized")
 
-    def insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
-        log.info(f"Inserting {len(embeddings)} vectors into database")
+    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+        ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
         # self.__client.max_batch_size >> 41666
-        ids: list[str] = [str(i) for i in range(start_id, start_id + len(embeddings))]
-        self.__collection.add(ids=ids, embeddings=embeddings)
+        self.__collection.add(ids=ids, embeddings=embeddings, metadatas=metadata)
+        print(self.__collection.get(ids="1"))
 
-    def batch_insert(self, embeddings: list[list[float]], start_id: int = 0) -> None:
-        log.info(f"Inserting {len(embeddings)} vectors into database")
-        ids: list[str] = [str(i) for i in range(start_id, start_id + len(embeddings))]
-        batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings)
+    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+        ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
+        batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings, metadatas=metadata)
         for batch in batches:
-            self.__collection.add(ids=batch[0], embeddings=batch[1])
+            self.__collection.add(ids=batch[0], embeddings=batch[1], metadatas=batch[2])
+
+    def __pre_insert(self, len_embeddings: int, metadata: list[str] | None, start_id: int):
+        """
+        Prepare data for insertion into the database.
+
+        This method generates a list of IDs for the embeddings and formats the metadata if provided.
+
+        :param len_embeddings: Number of embeddings to insert.
+        :param metadata: List of metadata strings to insert. The length should match len_embeddings if provided.
+        :param start_id: Index of the first inserted vector.
+        :return: A tuple containing the list of IDs and formatted metadata.
+        """
+        log.info(f"Inserting {len_embeddings} vectors into database")
+        ids: list[str] = [str(i) for i in range(start_id, start_id + len_embeddings)]
+        metadata = [{self.__metadata_field: md} for md in metadata] if metadata and len(
+            metadata) == len_embeddings else None
+        return ids, metadata
 
     def create_index(self) -> float:
         """
@@ -121,14 +138,20 @@ class ChromaClient(BaseClient):
         sqlite_size = self.__get_size_of(f"{self.__persistence_directory}/chroma.sqlite3")
         return bytes_to_mb(total_size - sqlite_size)
 
-    def query(self, query: list[float], k: int) -> list[int]:
+    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
         """
         Query the database with a given embedding and return the top k results.
 
         :param query: The query embedding.
         :param k: The number of results to return.
+        :param keyword_filter: A keyword-based filter to restrict the results. The metadate field of the result is equal
+            to keyword_filter
         :return: The id of the top k results from the query.
         """
-        log.info(f"Query {query} with {k} vectors")
-        res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
+        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
+        if keyword_filter:
+            res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k,
+                                                       where={self.__metadata_field: keyword_filter})
+        else:
+            res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
         return [int(id) for id in res["ids"][0]]
