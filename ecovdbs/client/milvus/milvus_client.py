@@ -83,11 +83,22 @@ class MilvusClient(BaseClient):
         """
         pass
 
-    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
+    def query(self, query: list[float], k: int) -> list[int]:
+        log.info(f"Query {k} vectors with. Query: {query}")
+        search_param: dict = self.__index_config.search_param()
+        self.__collection.load()
+        res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name, param=search_param,
+                                                     limit=k)
+        return [result.id for result in res[0]]
+
+    def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
         log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
         search_param: dict = self.__index_config.search_param()
         self.__collection.load()
-        expr = f'{self.__metadata_name} == "{keyword_filter}"' if keyword_filter else None
+        expr = f'{self.__metadata_name} == "{keyword_filter}"'
         res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name,
                                                      param=search_param, limit=k, expr=expr)
         return [result.id for result in res[0]]
+
+    def ranged_query(self, query: list[float], k: int, distance: int) -> list[int]:
+        pass

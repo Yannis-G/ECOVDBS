@@ -58,7 +58,6 @@ class ChromaClient(BaseClient):
         ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
         # self.__client.max_batch_size >> 41666
         self.__collection.add(ids=ids, embeddings=embeddings, metadatas=metadata)
-        print(self.__collection.get(ids="1"))
 
     def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
         ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
@@ -138,20 +137,19 @@ class ChromaClient(BaseClient):
         sqlite_size = self.__get_size_of(f"{self.__persistence_directory}/chroma.sqlite3")
         return bytes_to_mb(total_size - sqlite_size)
 
-    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
-        """
-        Query the database with a given embedding and return the top k results.
-
-        :param query: The query embedding.
-        :param k: The number of results to return.
-        :param keyword_filter: A keyword-based filter to restrict the results. The metadate field of the result is equal
-            to keyword_filter
-        :return: The id of the top k results from the query.
-        """
-        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
-        if keyword_filter:
-            res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k,
-                                                       where={self.__metadata_field: keyword_filter})
-        else:
-            res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
+    def query(self, query: list[float], k: int) -> list[int]:
+        log.info(f"Query {k} vectors with. Query: {query}")
+        res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
         return [int(id) for id in res["ids"][0]]
+
+    def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
+        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
+        res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k,
+                                                   where={self.__metadata_field: keyword_filter})
+        return [int(id) for id in res["ids"][0]]
+
+    def ranged_query(self, query: list[float], k: int, distance: int) -> list[int]:
+        """
+        Chroma DB does not support ranged queries.
+        """
+        raise NotImplementedError

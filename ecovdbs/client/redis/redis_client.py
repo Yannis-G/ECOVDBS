@@ -82,22 +82,24 @@ class RedisClient(BaseClient):
         return bytes_to_mb(self.__client.info("memory")["used_memory_dataset"])
 
     def index_storage(self) -> float:
-        return self.__client.ft(self.__index_name).info()["vector_index_sz_mb"]
+        return bytes_to_mb(self.__client.ft(self.__index_name).info()["vector_index_sz_mb"])
 
-    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
-        """
-        Query the database with a given embedding and return the top k results.
-
-        :param query: The query embedding.
-        :param k: The number of results to return.
-        :param keyword_filter: A keyword-based filter to restrict the results. The metadate field of the result is equal
-            to keyword_filter
-        :return: The id of the top k results from the query.
-        """
-        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
-        pre_filter = f"@{self.__metadata_name}:{keyword_filter}" if keyword_filter else "*"
-        redis_query = Query(f"({pre_filter})=>[KNN {k} @{self.__vector_name} $query_vector AS vector_score]").sort_by(
+    def query(self, query: list[float], k: int) -> list[int]:
+        log.info(f"Query {k} vectors with. Query: {query}")
+        redis_query = Query(f"(*)=>[KNN {k} @{self.__vector_name} $query_vector AS vector_score]").sort_by(
             "vector_score").return_fields("vector_score", "id", "metadata").paging(0, k).dialect(2)
         res = self.__client.ft(self.__index_name).search(redis_query, {
             "query_vector": np.array(query, dtype=np.float32).tobytes()}).docs
         return [int(doc['id']) for doc in res]
+
+    def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
+        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
+        redis_query = Query(
+            f"(@{self.__metadata_name}:{keyword_filter})=>[KNN {k} @{self.__vector_name} $query_vector AS vector_score]").sort_by(
+            "vector_score").return_fields("vector_score", "id", "metadata").paging(0, k).dialect(2)
+        res = self.__client.ft(self.__index_name).search(redis_query, {
+            "query_vector": np.array(query, dtype=np.float32).tobytes()}).docs
+        return [int(doc['id']) for doc in res]
+
+    def ranged_query(self, query: list[float], k: int, distance: int) -> list[int]:
+        pass

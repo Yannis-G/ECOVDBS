@@ -68,7 +68,19 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
+    def query(self, query: list[float], k: int) -> list[int]:
+        """
+        Query the database with a given embedding and return the top k results. For details of the search parameters see
+        the documentation of the given index configuration in __init__.
+
+        :param query: The query embedding.
+        :param k: The number of results to return.
+        :return: The id of the top k results from the query.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
         """
         Query the database with a given embedding and return the top k results. For details of the search parameters see
         the documentation of the given index configuration in __init__.
@@ -77,6 +89,19 @@ class BaseClient(ABC):
         :param k: The number of results to return.
         :param keyword_filter: A keyword-based filter to restrict the results. The metadate field of the result is equal
             to keyword_filter
+        :return: The id of the top k results from the query.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def ranged_query(self, query: list[float], k: int, distance: int) -> list[int]:
+        """
+        Query the database with a given embedding and return the top k results. For details of the search parameters see
+        the documentation of the given index configuration in __init__.
+
+        :param query: The query embedding.
+        :param k: The number of results to return.
+        :param distance: The maximum distance between the query and the embedding.
         :return: The id of the top k results from the query.
         """
         raise NotImplementedError

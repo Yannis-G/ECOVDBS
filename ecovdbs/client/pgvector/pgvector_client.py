@@ -138,23 +138,39 @@ class PgvectorClient(BaseClient):
         res = self.__conn.execute(database_size_query)
         return bytes_to_mb(res.fetchall()[0][0])
 
-    def query(self, query: list[float], k: int, keyword_filter: str | None = None) -> list[int]:
-        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
+    def query(self, query: list[float], k: int) -> list[int]:
+        log.info(f"Query {k} vectors with. Query: {query}")
         search_param = self.__index_config.search_param()
         self.__set_param(search_param["set"])
-        where = sql.SQL("WHERE {metadata_name} = {keyword_filter} ").format(
-            metadata_name=sql.Identifier(self.__metadata_name),
-            keyword_filter=sql.Literal(keyword_filter)) if keyword_filter else sql.Composed(())
         select = sql.Composed([
             sql.SQL(
-                "SELECT {id_name} FROM {table_name} ").format(
-                id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name)),
-            where,
-            sql.SQL("ORDER BY {vector_name} ").format(vector_name=sql.Identifier(self.__vector_name)),
+                "SELECT {id_name} FROM {table_name} ORDER BY {vector_name} ").format(
+                id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
+                vector_name=sql.Identifier(self.__vector_name)),
             sql.SQL(search_param["metric_operator"]),
             sql.SQL(" %s::vector LIMIT %s::int")
         ])
+        res = self.__conn.execute(select, (query, k))
+        return [int(r[0]) for r in res.fetchall()]
+
+    def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
+        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
+        search_param = self.__index_config.search_param()
+        self.__set_param(search_param["set"])
+        select = sql.Composed([
+            sql.SQL(
+                "SELECT {id_name} FROM {table_name} WHERE {metadata_name} = {keyword_filter} ORDER BY {vector_name} ").format(
+                id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
+                metadata_name=sql.Identifier(self.__metadata_name), keyword_filter=sql.Literal(keyword_filter),
+                vector_name=sql.Identifier(self.__vector_name)),
+            sql.SQL(search_param["metric_operator"]),
+            sql.SQL(" %s::vector LIMIT %s::int")
+        ])
+        # print(self.__conn.execute(sql.SQL("explain analyze ") + select, (query, k)).fetchall())
         # TODO Reihenfolge der Bearbeitung anders als erwartet. Es werden nicht alle Dateien mit WHERE sortiert und
         #  limitiert sondern alle sortierten limitierten mit where zurückgegeben
         res = self.__conn.execute(select, (query, k))
         return [int(r[0]) for r in res.fetchall()]
+
+    def ranged_query(self, query: list[float], k: int, distance: int) -> list[int]:
+        pass
