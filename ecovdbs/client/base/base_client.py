@@ -94,7 +94,7 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def ranged_query(self, query: list[float], k: int, distance: int) -> list[int]:
+    def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
         """
         Query the database with a given embedding and return the top k results. For details of the search parameters see
         the documentation of the given index configuration in __init__.

@@ -138,17 +138,17 @@ class ChromaClient(BaseClient):
         return bytes_to_mb(total_size - sqlite_size)
 
     def query(self, query: list[float], k: int) -> list[int]:
-        log.info(f"Query {k} vectors with. Query: {query}")
+        log.info(f"Query {k} vectors. Query: {query}")
         res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
         return [int(id) for id in res["ids"][0]]
 
     def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
-        log.info(f"Query {k} vectors with {keyword_filter}. Query: {query}")
+        log.info(f"Query {k} vectors with keyword_filter {keyword_filter}. Query: {query}")
         res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k,
                                                    where={self.__metadata_field: keyword_filter})
         return [int(id) for id in res["ids"][0]]
 
-    def ranged_query(self, query: list[float], k: int, distance: int) -> list[int]:
+    def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
         """
         Chroma DB does not support ranged queries.
         """
