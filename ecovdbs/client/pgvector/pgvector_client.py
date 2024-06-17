@@ -166,11 +166,26 @@ class PgvectorClient(BaseClient):
             sql.SQL(search_param["metric_operator"]),
             sql.SQL(" %s::vector LIMIT %s::int")
         ])
-        # print(self.__conn.execute(sql.SQL("explain analyze ") + select, (query, k)).fetchall())
-        # TODO Reihenfolge der Bearbeitung anders als erwartet. Es werden nicht alle Dateien mit WHERE sortiert und
-        #  limitiert sondern alle sortierten limitierten mit where zurückgegeben
+        # print(self.__conn.execute(sql.SQL("explain analyze ") + select, (query, k)).fetchall()) Post filtern:
+        # Reihenfolge der Bearbeitung anders als erwartet. Es werden nicht alle Dateien mit WHERE sortiert und
+        # limitiert, sondern alle sortierten limitierten mit where zurückgegeben
         res = self.__conn.execute(select, (query, k))
         return [int(r[0]) for r in res.fetchall()]
 
     def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
         log.info(f"Query {k} vectors with distance {distance}. Query: {query}")
+        search_param = self.__index_config.search_param()
+        self.__set_param(search_param["set"])
+        select = sql.Composed([
+            sql.SQL(
+                "SELECT {id_name} FROM {table_name} WHERE {vector_name} ").format(
+                id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
+                vector_name=sql.Identifier(self.__vector_name)),
+            sql.SQL(search_param["metric_operator"]),
+            sql.SQL(" %s::vector < %s::int ORDER BY {vector_name} ").format(
+                vector_name=sql.Identifier(self.__vector_name)),
+            sql.SQL(search_param["metric_operator"]),
+            sql.SQL(" %s::vector LIMIT %s::int")
+        ])
+        res = self.__conn.execute(select, (query, distance, query, k))
+        return [int(r[0]) for r in res.fetchall()]
