@@ -150,10 +150,13 @@ class RedisHNSWConfig(BaseHNSWConfig):
 
     def search_param(self) -> dict | None:
         """
-        No need in Redis DB, only Params needed for index creation in the collection creation process
+        Generate the search parameters dictionary. The directory may contain the key ``EF_RUNTIME`` if the value is
+        different from the default value of the database.
 
-        :return: None
+        :return: Dictionary containing the search parameters or None if only the default parameters are needed.
         """
+        if self.__ef_construction is not None:
+            return {"EF_RUNTIME": self.__ef_runtime}
         return None
 
     def change_ef_search(self, ef: int) -> None:
