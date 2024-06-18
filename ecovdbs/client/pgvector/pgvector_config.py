@@ -1,4 +1,4 @@
-from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType
+from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
 
 
 class PgvectorConfig(BaseConfig):
@@ -40,7 +40,7 @@ class PgvectorConfig(BaseConfig):
         }
 
 
-class PgvectorHNSWConfig(BaseIndexConfig):
+class PgvectorHNSWConfig(BaseHNSWConfig):
     """
     Configuration class for HNSW index in pgvector. An HNSW index creates a multilayer graph. It has better query
     performance than IVFFlat (in terms of speed-recall tradeoff), but has slower build times and uses more memory.
@@ -112,6 +112,9 @@ class PgvectorHNSWConfig(BaseIndexConfig):
         if self.__ef_search is not None:
             param["set"]["hnsw.ef_search"] = self.__ef_search
         return param
+
+    def change_ef_search(self, ef: int) -> None:
+        self.__ef_search = ef
 
 
 class PgvectorIVFFlatConfig(BaseIndexConfig):

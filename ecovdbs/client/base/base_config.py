@@ -65,3 +65,19 @@ class BaseIndexConfig(ABC):
         :return: The search parameters as a dictionary.
         """
         raise NotImplementedError
+
+
+class BaseHNSWConfig(BaseIndexConfig, ABC):
+    """
+    Abstract base class defining the configuration interface for HNSW settings.
+    """
+
+    @abstractmethod
+    def change_ef_search(self, ef: int) -> None:
+        """
+        Change the EF of the HNSW.
+
+        :param ef: Parameter controlling query time/accuracy trade-off. Higher ef leads to more accurate but slower
+            search.
+        """
+        raise NotImplementedError

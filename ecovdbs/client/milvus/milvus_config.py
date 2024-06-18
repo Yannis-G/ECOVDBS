@@ -1,4 +1,4 @@
-from ..base.base_config import BaseConfig, BaseIndexConfig, IndexType, MetricType
+from ..base.base_config import BaseConfig, BaseIndexConfig, IndexType, MetricType, BaseHNSWConfig
 
 
 class MilvusConfig(BaseConfig):
@@ -40,11 +40,6 @@ class MilvusAutoIndexConfig(BaseIndexConfig):
         self.__metric_type: MetricType = metric_type
 
     def index_param(self) -> dict:
-        """
-        Get the parameters for the index creation.
-
-        :return: The index parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "index_type": self.__index_type.value,
@@ -52,11 +47,6 @@ class MilvusAutoIndexConfig(BaseIndexConfig):
         }
 
     def search_param(self) -> dict:
-        """
-        Get the parameters for search.
-
-        :return: The search parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "params": {},
@@ -78,11 +68,6 @@ class MilvusFlatConfig(BaseIndexConfig):
         self.__metric_type: MetricType = metric_type
 
     def index_param(self) -> dict:
-        """
-        Get the parameters for the index creation.
-
-        :return: The index parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "index_type": self.__index_type.value,
@@ -90,11 +75,6 @@ class MilvusFlatConfig(BaseIndexConfig):
         }
 
     def search_param(self) -> dict:
-        """
-        Get the parameters for search.
-
-        :return: The search parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "params": {},
@@ -122,11 +102,6 @@ class MilvusIVFFlatIndex(BaseIndexConfig):
         self.__nprobe: int = nprobe
 
     def index_param(self) -> dict:
-        """
-        Get the parameters for the index creation.
-
-        :return: The index parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "index_type": self.__index_type.value,
@@ -134,11 +109,6 @@ class MilvusIVFFlatIndex(BaseIndexConfig):
         }
 
     def search_param(self) -> dict:
-        """
-        Get the parameters for search.
-
-        :return: The search parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "params": {"nprobe": self.__nprobe},
@@ -166,11 +136,6 @@ class MilvusIVFSQ8Index(BaseIndexConfig):
         self.__nprobe: int = nprobe
 
     def index_param(self) -> dict:
-        """
-        Get the parameters for the index creation.
-
-        :return: The index parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "index_type": self.__index_type.value,
@@ -178,11 +143,6 @@ class MilvusIVFSQ8Index(BaseIndexConfig):
         }
 
     def search_param(self) -> dict:
-        """
-        Get the parameters for search.
-
-        :return: The search parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "params": {"nprobe": self.__nprobe},
@@ -215,11 +175,6 @@ class MilvusIVFPQIndex(BaseIndexConfig):
         self.__nprobe: int = nprobe
 
     def index_param(self) -> dict:
-        """
-        Get the parameters for the index creation.
-
-        :return: The index parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "index_type": self.__index_type.value,
@@ -227,11 +182,6 @@ class MilvusIVFPQIndex(BaseIndexConfig):
         }
 
     def search_param(self) -> dict:
-        """
-        Get the parameters for search.
-
-        :return: The search parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "params": {"nprobe": self.__nprobe},
@@ -263,11 +213,6 @@ class MilvusSCANNIndex(BaseIndexConfig):
         self.__reorder_k: int = reorder_k
 
     def index_param(self) -> dict:
-        """
-        Get the parameters for the index creation.
-
-        :return: The index parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "index_type": self.__index_type.value,
@@ -275,18 +220,13 @@ class MilvusSCANNIndex(BaseIndexConfig):
         }
 
     def search_param(self) -> dict:
-        """
-        Get the parameters for search.
-
-        :return: The search parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "params": {"nprobe": self.__nprobe, "reorder_k": self.__reorder_k},
         }
 
 
-class MilvusHNSWConfig(BaseIndexConfig):
+class MilvusHNSWConfig(BaseHNSWConfig):
     """
     Configuration class for HNSW type index in Milvus.
     """
@@ -295,9 +235,12 @@ class MilvusHNSWConfig(BaseIndexConfig):
         """
         Initialize MilvusHNSWConfig.
 
-        :param M: M defines tha maximum number of outgoing connections in the graph. Higher M leads to higher accuracy/run_time at fixed ef/efConstruction.
-        :param efConstruction: ef_construction controls index search speed/build speed tradeoff. Increasing the efConstruction parameter may enhance index quality, but it also tends to lengthen the indexing time.
-        :param ef: Parameter controlling query time/accuracy trade-off. Higher ef leads to more accurate but slower search.
+        :param M: M defines tha maximum number of outgoing connections in the graph. Higher M leads to higher
+            accuracy/run_time at fixed ef/efConstruction.
+        :param efConstruction: ef_construction controls index search speed/build speed tradeoff. Increasing the
+            efConstruction parameter may enhance index quality, but it also tends to lengthen the indexing time.
+        :param ef: Parameter controlling query time/accuracy trade-off. Higher ef leads to more accurate but slower
+            search.
         """
         self.__index_type: IndexType = IndexType.HNSW
         self.__metric_type: MetricType = metric_type
@@ -309,11 +252,6 @@ class MilvusHNSWConfig(BaseIndexConfig):
         self.__ef: int = ef
 
     def index_param(self) -> dict:
-        """
-        Get the parameters for the index creation.
-
-        :return: The index parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "index_type": self.__index_type.value,
@@ -321,12 +259,10 @@ class MilvusHNSWConfig(BaseIndexConfig):
         }
 
     def search_param(self) -> dict:
-        """
-        Get the parameters for search.
-
-        :return: The search parameters as a dictionary.
-        """
         return {
             "metric_type": self.__metric_type.value,
             "params": {"ef": self.__ef},
         }
+
+    def change_ef_search(self, ef: int) -> None:
+        self.__ef = ef

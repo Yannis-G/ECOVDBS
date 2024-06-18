@@ -1,4 +1,4 @@
-from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType
+from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
 
 
 class RedisConfig(BaseConfig):
@@ -86,7 +86,7 @@ class RedisFlatConfig(BaseIndexConfig):
         return None
 
 
-class RedisHNSWConfig(BaseIndexConfig):
+class RedisHNSWConfig(BaseHNSWConfig):
     """
     Configuration class for the HNSW index type in Redis.
     """
@@ -155,3 +155,6 @@ class RedisHNSWConfig(BaseIndexConfig):
         :return: None
         """
         return None
+
+    def change_ef_search(self, ef: int) -> None:
+        self.__ef_runtime = ef

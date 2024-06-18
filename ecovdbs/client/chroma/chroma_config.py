@@ -1,4 +1,4 @@
-from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType
+from ..base.base_config import BaseConfig, BaseHNSWConfig, MetricType
 
 
 class ChromaConfig(BaseConfig):
@@ -6,7 +6,7 @@ class ChromaConfig(BaseConfig):
     Configuration class for Chroma database clients.
     """
 
-    def __init__(self, host: str = "localhost", port: int = 8000, container_name = "chromadb") -> None:
+    def __init__(self, host: str = "localhost", port: int = 8000, container_name="chromadb") -> None:
         """
         Initialize the ChromaConfig with default values.
 
@@ -32,7 +32,7 @@ class ChromaConfig(BaseConfig):
         }
 
 
-class ChromaIndexConfig(BaseIndexConfig):
+class ChromaHNSWConfig(BaseHNSWConfig):
     """
     Configuration class for the Chroma HNSW index.
     """
@@ -107,8 +107,14 @@ class ChromaIndexConfig(BaseIndexConfig):
 
     def search_param(self) -> dict | None:
         """
-        No need in Chroma DB, only Params needed for index creation in the collection creation process.
+        Generate the search parameters dictionary. The directory may contain the key ``hnsw:search_ef`` if the value is
+        different from the default value of the database.
 
-        :return: None
+        :return: Dictionary containing the search parameters or None if only the default parameters are needed.
         """
+        if self.__search_ef is not None:
+            return {"hnsw:search_ef": self.__search_ef}
         return None
+
+    def change_ef_search(self, ef: int) -> None:
+        self.__search_ef = ef

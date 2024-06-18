@@ -6,7 +6,7 @@ from chromadb.utils.batch_utils import create_batches
 from docker.errors import NotFound, APIError
 
 from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
-from .chroma_config import ChromaConfig, ChromaIndexConfig
+from .chroma_config import ChromaConfig, ChromaHNSWConfig
 from ..utility import bytes_to_mb
 
 log = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class ChromaClient(BaseClient):
     :class:`BaseClient`.
     """
 
-    def __init__(self, dimension: int, index_config: BaseIndexConfig = ChromaIndexConfig(),
+    def __init__(self, dimension: int, index_config: BaseIndexConfig = ChromaHNSWConfig(),
                  db_config: BaseConfig = ChromaConfig()) -> None:
         """
         Initialize the ChromaClient with a given database configuration.
@@ -137,13 +137,23 @@ class ChromaClient(BaseClient):
         sqlite_size = self.__get_size_of(f"{self.__persistence_directory}/chroma.sqlite3")
         return bytes_to_mb(total_size - sqlite_size)
 
+    def __pre_query(self) -> None:
+        """
+        Update collections metadata.
+        """
+        self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
+                                                                               metadata=self.__index_config.search_param())
+
+    #
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
+        self.__pre_query()
         res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k)
         return [int(id) for id in res["ids"][0]]
 
     def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
         log.info(f"Query {k} vectors with keyword_filter {keyword_filter}. Query: {query}")
+        self.__pre_query()
         res: QueryResult = self.__collection.query(query_embeddings=query, n_results=k,
                                                    where={self.__metadata_field: keyword_filter})
         return [int(id) for id in res["ids"][0]]
