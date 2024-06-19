@@ -1,8 +1,9 @@
 import time
 from functools import wraps
+from typing import Any, Callable
 
 
-def time_it(func):
+def time_it(func) -> Callable[..., tuple[Any, float]]:
     """
     A decorator that measures the execution time of a function.
 
@@ -12,7 +13,7 @@ def time_it(func):
     """
 
     @wraps(func)
-    def time_it_wrapper(*args, **kwargs):
+    def time_it_wrapper(*args, **kwargs) -> tuple[Any, float]:
         """
         Wrapper function that measures the execution time of the wrapped function.
 
