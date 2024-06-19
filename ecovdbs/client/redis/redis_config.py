@@ -139,7 +139,7 @@ class RedisHNSWConfig(BaseHNSWConfig):
 
         :return: Dictionary containing the search parameters or None if only the default parameters are needed.
         """
-        if self.__ef_construction is not None:
+        if self.__ef_runtime is not None:
             return {"EF_RUNTIME": self.__ef_runtime}
         return None
 
