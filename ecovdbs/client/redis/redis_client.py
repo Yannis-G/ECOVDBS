@@ -85,12 +85,12 @@ class RedisClient(BaseClient):
 
     def __pre_query(self) -> str:
         param = self.__index_config.search_param()
-        return f" EF_RUNTIME {param['EF_RUNTIME']}" if param else ""
+        return f"$EF_RUNTIME: {param['EF_RUNTIME']}; " if param else ""
 
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
         redis_query = Query(
-            f"(*)=>[KNN {k} @{self.__vector_name} $query_vector AS vector_score{self.__pre_query()}]").sort_by(
+            f"(*)=>[KNN {k} @{self.__vector_name} $query_vector]=>{{{self.__pre_query()}$YIELD_DISTANCE_AS: vector_score}}").sort_by(
             "vector_score").return_fields("vector_score", "id", "metadata").paging(0, k).dialect(2)
         res = self.__client.ft(self.__index_name).search(redis_query, {
             "query_vector": np.array(query, dtype=np.float32).tobytes()}).docs
@@ -99,7 +99,7 @@ class RedisClient(BaseClient):
     def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
         log.info(f"Query {k} vectors with keyword_filter {keyword_filter}. Query: {query}")
         redis_query = Query(
-            f"(@{self.__metadata_name}:{keyword_filter})=>[KNN {k} @{self.__vector_name} $query_vector AS vector_score{self.__pre_query()}]").sort_by(
+            f"(@{self.__metadata_name}:{keyword_filter})=>[KNN {k} @{self.__vector_name} $query_vector]=>{{{self.__pre_query()}$YIELD_DISTANCE_AS: vector_score}}").sort_by(
             "vector_score").return_fields("vector_score", "id", "metadata").paging(0, k).dialect(2)
         res = self.__client.ft(self.__index_name).search(redis_query, {
             "query_vector": np.array(query, dtype=np.float32).tobytes()}).docs
