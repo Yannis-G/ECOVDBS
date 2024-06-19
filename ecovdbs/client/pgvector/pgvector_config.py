@@ -7,11 +7,12 @@ class PgvectorConfig(BaseConfig):
     """
     Configuration class for PostgreSQL database clients using the pgvector extension.
 
-    :param host: The hostname for the database server. Defaults to "localhost".
-    :param port: The port number for the database server. Defaults to 5432.
-    :param dbname: The database name. Defaults to "postgres".
-    :param user: The username for the database. Defaults to "postgres".
-    :param password: The password for the database. Defaults to "pwd".
+    Attributes:
+        host: The hostname for the database server. Defaults to "localhost".
+        port: The port number for the database server. Defaults to 5432.
+        dbname: The database name. Defaults to "postgres".
+        user: The username for the database. Defaults to "postgres".
+        password: The password for the database. Defaults to "pwd".
     """
     host: str = "localhost"
     port: int = 5432

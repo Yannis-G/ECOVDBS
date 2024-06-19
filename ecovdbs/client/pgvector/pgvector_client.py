@@ -85,6 +85,7 @@ class PgvectorClient(BaseClient):
         """
         Not implemented.
         """
+        # TODO implement
         pass
 
     def create_index(self) -> None:

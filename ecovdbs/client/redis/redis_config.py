@@ -7,9 +7,10 @@ class RedisConfig(BaseConfig):
     """
     Configuration class for Redis database clients.
 
-    :param host: The hostname for the database server. Defaults to "localhost".
-    :param port: The port number for the database server. Defaults to 6379.
-    :param password: The password for the Redis server. Defaults to an empty string.
+    Attributes:
+        host: The hostname for the database server. Defaults to "localhost".
+        port: The port number for the database server. Defaults to 6379.
+        password: The password for the Redis server. Defaults to an empty string.
     """
     host: str = 'localhost'
     port: int = 6379

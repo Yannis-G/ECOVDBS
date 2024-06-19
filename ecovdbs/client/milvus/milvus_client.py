@@ -63,6 +63,7 @@ class MilvusClient(BaseClient):
         """
         Not implemented.
         """
+        # TODO implement
         pass
 
     def create_index(self) -> None:
@@ -74,12 +75,14 @@ class MilvusClient(BaseClient):
         """
         Not implemented.
         """
+        # TODO implement
         pass
 
     def index_storage(self):
         """
         Not implemented.
         """
+        # TODO implement
         pass
 
     def query(self, query: list[float], k: int) -> list[int]:
@@ -101,4 +104,5 @@ class MilvusClient(BaseClient):
 
     def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
         log.info(f"Query {k} vectors with distance {distance}. Query: {query}")
+        # TODO implement
         # https://milvus.io/docs/single-vector-search.md#Range-search

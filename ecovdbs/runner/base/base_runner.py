@@ -26,7 +26,7 @@ class InsertRunner:
     def run(self):
         _, t_index = self.create_index()
         _, t_insert = self.insert(self.__dataset.data_vectors)
-        print("Index+Insert Time", t_index, t_insert)
+        print("Index+Insert Time", t_index + t_insert)
 
     @time_it
     def insert(self, embeddings: list[list[float]]):

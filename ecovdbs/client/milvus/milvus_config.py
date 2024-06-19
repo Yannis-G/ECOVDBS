@@ -7,7 +7,8 @@ class MilvusConfig(BaseConfig):
     """
     Configuration class for Milvus database clients.
 
-    :param connection_uri: The connection URI for the Milvus server. Defaults to "http://localhost:19530".
+    Attributes:
+        connection_uri: The connection URI for the Milvus server. Defaults to "http://localhost:19530".
     """
     connection_uri: str = "http://localhost:19530"
 

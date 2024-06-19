@@ -7,11 +7,24 @@ from dataclasses import dataclass
 
 @dataclass
 class RedisHNSWTask(HNSWTask):
+    """
+    Represents a task for running HNSW (Hierarchical Navigable Small World) on a Redis database.
+
+    Attributes:
+        index_config (RedisHNSWConfig): Configuration for the HNSW index in Redis.
+        client (RedisClient): Redis client to interact with the Redis database.
+        dataset (Dataset): Dataset to be used for the HNSW task.
+    """
     index_config: RedisHNSWConfig
     client: RedisClient
     dataset: Dataset
 
     def __init__(self, case: HNSWCase):
+        """
+        Initialize the RedisHNSWTask with a given HNSW case configuration.
+
+        :param case: The HNSW case configuration (see :class:`HNSWCase`).
+        """
         self.index_config = RedisHNSWConfig(metric_type=case.dataset.metric_type, M=case.hnsw_config.M,
                                             ef_construction=case.hnsw_config.ef_construction)
         self.client = RedisClient(dimension=case.dataset.dimension, index_config=self.index_config)

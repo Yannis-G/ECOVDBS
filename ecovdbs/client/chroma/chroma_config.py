@@ -7,9 +7,10 @@ class ChromaConfig(BaseConfig):
     """
     Configuration class for Chroma database clients.
 
-    :param host: The hostname for the database server. Defaults to "localhost".
-    :param port: The port number for the database server. Defaults to 8000.
-    :param container_name: The name of the database container server. Defaults to "chromadb".
+    Attributes:
+        host: The hostname for the database server. Defaults to "localhost".
+        port: The port number for the database server. Defaults to 8000.
+        container_name: The name of the database container server. Defaults to "chromadb".
     """
     host: str = "localhost"
     port: int = 8000
