@@ -1,28 +1,15 @@
 from ..base.base_config import BaseConfig, BaseIndexConfig, IndexType, MetricType, BaseHNSWConfig
+from dataclasses import dataclass
 
 
+@dataclass(frozen=True)
 class MilvusConfig(BaseConfig):
     """
     Configuration class for Milvus database clients.
+
+    :param connection_uri: The connection URI for the Milvus server. Defaults to "http://localhost:19530".
     """
-
-    def __init__(self, connection_uri: str = "http://localhost:19530") -> None:
-        """
-        Initialize the MilvusConfig with default values.
-
-        :param connection_uri: The connection URI for the Milvus server. Defaults to "http://localhost:19530".
-        """
-        self.__uri = connection_uri
-
-    def to_dict(self) -> dict:
-        """
-        Convert the configuration to a dictionary. The dictionary will have the key ``uri`` for the connection URI.
-
-        :return: The configuration as a dictionary.
-        """
-        return {
-            "uri": self.__uri
-        }
+    connection_uri: str = "http://localhost:19530"
 
 
 class MilvusAutoIndexConfig(BaseIndexConfig):

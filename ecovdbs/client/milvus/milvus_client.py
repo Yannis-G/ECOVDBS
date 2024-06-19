@@ -2,7 +2,7 @@ import logging
 
 from pymilvus import DataType, connections, FieldSchema, CollectionSchema, Collection, utility, SearchResult
 
-from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 from .milvus_config import MilvusConfig
 
 log = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ class MilvusClient(BaseClient):
     :class:`BaseClient`.
     """
 
-    def __init__(self, dimension: int, index_config: BaseIndexConfig, db_config: BaseConfig = MilvusConfig()):
+    def __init__(self, dimension: int, index_config: BaseIndexConfig, db_config: MilvusConfig = MilvusConfig()):
         """
         Initialize the MilvusClient with a given database configuration.
 
@@ -24,14 +24,13 @@ class MilvusClient(BaseClient):
         """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
-        self.__db_config: dict = db_config.to_dict()
         self.__collection_name: str = "ecovdbs"
         self.__id_name: str = "id"
         self.__metadata_name: str = "metadata"
         self.__vector_name: str = "vector"
 
         # Connect to the Milvus server
-        connections.connect(uri=self.__db_config["uri"])
+        connections.connect(uri=db_config.connection_uri)
 
         # Drop the collection if it already exists
         if utility.has_collection(self.__collection_name):
@@ -102,3 +101,4 @@ class MilvusClient(BaseClient):
 
     def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
         log.info(f"Query {k} vectors with distance {distance}. Query: {query}")
+        # https://milvus.io/docs/single-vector-search.md#Range-search

@@ -1,43 +1,23 @@
 from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
+from dataclasses import dataclass
 
 
+@dataclass(frozen=True)
 class PgvectorConfig(BaseConfig):
     """
     Configuration class for PostgreSQL database clients using the pgvector extension.
+
+    :param host: The hostname for the database server. Defaults to "localhost".
+    :param port: The port number for the database server. Defaults to 5432.
+    :param dbname: The database name. Defaults to "postgres".
+    :param user: The username for the database. Defaults to "postgres".
+    :param password: The password for the database. Defaults to "pwd".
     """
-
-    def __init__(self, host: str = "localhost", port: int = 5432, dbname: str = "postgres", user: str = "postgres",
-                 password: str = "pwd"):
-        """
-        Initialize the PgvectorConfig with default values.
-
-        :param host: The hostname for the database server. Defaults to "localhost".
-        :param port: The port number for the database server. Defaults to 5432.
-        :param dbname: The database name. Defaults to "postgres".
-        :param user: The username for the database. Defaults to "postgres".
-        :param password: The password for the database. Defaults to "pwd".
-        """
-        self.__host = host
-        self.__port = port
-        self.__dbname = dbname
-        self.__user = user
-        self.__password = password
-
-    def to_dict(self) -> dict:
-        """
-        Convert the configuration to a dictionary. The dictionary will have the keys host for the ``hostname`` of the
-        database server, ``port`` for th port for the database server, ``dbname`` for the database name, ``user`` for
-        the username and ``password`` for the password.
-
-        :return: The configuration as a dictionary.
-        """
-        return {
-            "host": self.__host,
-            "port": self.__port,
-            "dbname": self.__dbname,
-            "user": self.__user,
-            "password": self.__password
-        }
+    host: str = "localhost"
+    port: int = 5432
+    dbname: str = "postgres"
+    user: str = "postgres"
+    password: str = "pwd"
 
 
 class PgvectorHNSWConfig(BaseHNSWConfig):

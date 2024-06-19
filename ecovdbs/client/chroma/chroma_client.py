@@ -5,7 +5,7 @@ from chromadb import ClientAPI, Collection, QueryResult
 from chromadb.utils.batch_utils import create_batches
 from docker.errors import NotFound, APIError
 
-from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 from .chroma_config import ChromaConfig, ChromaHNSWConfig
 from ..utility import bytes_to_mb
 
@@ -19,7 +19,7 @@ class ChromaClient(BaseClient):
     """
 
     def __init__(self, dimension: int, index_config: BaseIndexConfig = ChromaHNSWConfig(),
-                 db_config: BaseConfig = ChromaConfig()) -> None:
+                 db_config: ChromaConfig = ChromaConfig()) -> None:
         """
         Initialize the ChromaClient with a given database configuration.
 
@@ -29,22 +29,21 @@ class ChromaClient(BaseClient):
         """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
-        self.__db_config: dict = db_config.to_dict()
         self.__collection_name: str = "ecovdbs"
         self.__metadata_field: str = "metadata"
         self.__persistence_directory = "/chroma/chroma"
-        self.__client: ClientAPI = chromadb.HttpClient(host=self.__db_config["host"], port=self.__db_config["port"])
+        self.__client: ClientAPI = chromadb.HttpClient(host=db_config.host, port=db_config.port)
 
         # Ensure the client is alive by checking the heartbeat.
         assert self.__client.heartbeat() is not None
 
         try:
             client = docker.from_env()
-            self.__container = client.containers.get(self.__db_config["container_name"])
+            self.__container = client.containers.get(db_config.container_name)
             # Delete all subdirectories in the persistence directory
             self.__container.exec_run(f"sh -c 'rm -R -- {self.__persistence_directory}/*/'")
         except NotFound | APIError:
-            log.error(f"Could not find the database container with the name {self.__db_config['container_name']}")
+            log.error(f"Could not find the database container with the name {db_config.container_name}")
 
         # Empties and completely resets the database. ⚠️
         self.__client.reset()

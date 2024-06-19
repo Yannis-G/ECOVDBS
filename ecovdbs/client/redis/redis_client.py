@@ -6,7 +6,7 @@ from redis.commands.search.field import VectorField, TextField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 
-from ..base.base_client import BaseClient, BaseConfig, BaseIndexConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 from .redis_config import RedisConfig
 from ..utility import bytes_to_mb
 
@@ -20,17 +20,16 @@ class RedisClient(BaseClient):
     same as :class:`BaseClient`.
     """
 
-    def __init__(self, dimension: int, index_config: BaseIndexConfig, db_config: BaseConfig = RedisConfig()) -> None:
+    def __init__(self, dimension: int, index_config: BaseIndexConfig, db_config: RedisConfig = RedisConfig()) -> None:
         """
         Initialize the RedisClient with given database and index configurations.
 
         :param dimension: The dimension of the vector embeddings.
-        :param index_config: Configuration for the index (see :class:`RedisIndexConfig` or :class:`RedisHNSWConfig`).
+        :param index_config: Configuration for the index (see :class:`RedisFlatConfig` or :class:`RedisHNSWConfig`).
         :param db_config: Configuration for the database connection (see :class:`RedisConfig`).
         """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
-        self.__db_config: dict = db_config.to_dict()
         self.__index_name: str = "ecovdbs"
         self.__metadata_name: str = "metadata"
         self.__vector_name: str = "vector"
@@ -40,8 +39,7 @@ class RedisClient(BaseClient):
             self.__vector_dtype = np.float64
 
         # Initialize the Redis client
-        self.__client: Redis = Redis(host=self.__db_config["host"], port=self.__db_config["port"],
-                                     password=self.__db_config["password"])
+        self.__client: Redis = Redis(host=db_config.host, port=db_config.port, password=db_config.password)
 
         # Flush the database to ensure it's empty
         self.__client.flushdb()

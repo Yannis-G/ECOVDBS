@@ -15,26 +15,26 @@ def download(src_url: str, dest_path: str) -> None:
         urlretrieve(src_url, dest_path)
 
 
-def fvecs_read(filename, bounds=None):
+def fvecs_read(filename, bounds=None) -> list[list[int]]:
     """
     Read a file in fvecs format. This code is a python translation of http://corpus-texmex.irisa.fr/fvecs_read.m
 
     :param filename: Path to the fvecs file.
     :param bounds: Bounds to read a subset of vectors.
-    :return: Array of vectors.
+    :return: List of vectors.
     """
-    return __xvecs_read(filename, np.float32, bounds)
+    return __xvecs_read(filename, np.float32, bounds).tolist()
 
 
-def ivecs_read(filename, bounds=None):
+def ivecs_read(filename, bounds=None) -> list[list[int]]:
     """
     Read a file in ivecs format. This code is a python translation of http://corpus-texmex.irisa.fr/ivecs_read.m
 
     :param filename: Path to the ivecs file.
     :param bounds: Bounds to read a subset of vectors.
-    :return: Array of vectors.
+    :return: List of list of ids.
     """
-    return __xvecs_read(filename, np.int32, bounds)
+    return __xvecs_read(filename, np.int32, bounds).tolist()
 
 
 def __xvecs_read(filename, dtype: np.int32 | np.float32, bounds=None):

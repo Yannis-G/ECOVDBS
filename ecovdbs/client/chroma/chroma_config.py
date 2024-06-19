@@ -1,35 +1,19 @@
 from ..base.base_config import BaseConfig, BaseHNSWConfig, MetricType
+from dataclasses import dataclass
 
 
+@dataclass(frozen=True)
 class ChromaConfig(BaseConfig):
     """
     Configuration class for Chroma database clients.
+
+    :param host: The hostname for the database server. Defaults to "localhost".
+    :param port: The port number for the database server. Defaults to 8000.
+    :param container_name: The name of the database container server. Defaults to "chromadb".
     """
-
-    def __init__(self, host: str = "localhost", port: int = 8000, container_name="chromadb") -> None:
-        """
-        Initialize the ChromaConfig with default values.
-
-        :param host: The hostname for the database server. Defaults to "localhost".
-        :param port: The port number for the database server. Defaults to 8000.
-        """
-        self.__host: str = host
-        self.__port: int = port
-        self.__container_name: str = container_name
-
-    def to_dict(self) -> dict:
-        """
-        Convert the configuration to a dictionary. The dictionary will have the keys ``host`` for the hostname of the
-        database server, ``port`` for the port of the database server and ``container_name`` for the name of the docker
-        container.
-
-        :return: The configuration as a dictionary.
-        """
-        return {
-            "host": self.__host,
-            "port": self.__port,
-            "container_name": self.__container_name,
-        }
+    host: str = "localhost"
+    port: int = 8000
+    container_name = "chromadb"
 
 
 class ChromaHNSWConfig(BaseHNSWConfig):

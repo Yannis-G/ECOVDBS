@@ -4,7 +4,7 @@ import psycopg
 from pgvector.psycopg import register_vector
 from psycopg import Connection, sql, Cursor
 
-from ..base.base_client import BaseClient, BaseIndexConfig, BaseConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 from .pgvector_config import PgvectorConfig
 from ..utility import bytes_to_mb
 
@@ -17,7 +17,8 @@ class PgvectorClient(BaseClient):
     (see https://github.com/pgvector/pgvector). Interface is the same as :class:`BaseClient`.
     """
 
-    def __init__(self, dimension: int, index_config: BaseIndexConfig, db_config: BaseConfig = PgvectorConfig()) -> None:
+    def __init__(self, dimension: int, index_config: BaseIndexConfig,
+                 db_config: PgvectorConfig = PgvectorConfig()) -> None:
         """
         Initialize the PgvectorClient with the specified parameters.
 
@@ -28,7 +29,6 @@ class PgvectorClient(BaseClient):
         """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
-        self.__db_config: dict = db_config.to_dict()
         self.__table_name = "ecovdbs"
         self.__index_name = "idx:ecovdbs"
         self.__id_name = "id"
@@ -37,7 +37,7 @@ class PgvectorClient(BaseClient):
 
         # Establish connection to PostgreSQL database
         self.__conn: Connection = psycopg.connect(
-            f"host={self.__db_config['host']} port={self.__db_config['port']} dbname={self.__db_config['dbname']} user={self.__db_config['user']} password={self.__db_config['password']}")
+            f"host={db_config.host} port={db_config.port} dbname={db_config.dbname} user={db_config.user} password={db_config.password}")
 
         # Ensure the vector extension is available
         self.__conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
@@ -178,6 +178,8 @@ class PgvectorClient(BaseClient):
         self.__set_param(search_param["set"])
         select = sql.Composed([
             sql.SQL(
+                # TODO umrechnen distanz für andere Metriken außer L2 IP((embedding <#> '[3,1,2]') * -1), Csine (1 -
+                #  (embedding <=> '[3,1,2]'))
                 "SELECT {id_name} FROM {table_name} WHERE {vector_name} ").format(
                 id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
                 vector_name=sql.Identifier(self.__vector_name)),

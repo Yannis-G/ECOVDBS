@@ -1,35 +1,19 @@
 from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
+from dataclasses import dataclass
 
 
+@dataclass(frozen=True)
 class RedisConfig(BaseConfig):
     """
     Configuration class for Redis database clients.
+
+    :param host: The hostname for the database server. Defaults to "localhost".
+    :param port: The port number for the database server. Defaults to 6379.
+    :param password: The password for the Redis server. Defaults to an empty string.
     """
-
-    def __init__(self, host: str = "localhost", port: int = 6379, password="") -> None:
-        """
-        Initialize the RedisConfig with default values.
-
-        :param host: The hostname for the database server. Defaults to "localhost".
-        :param port: The port number for the database server. Defaults to 6379.
-        :param password: The password for the Redis server. Defaults to an empty string.
-        """
-        self.__host: str = host
-        self.__port: int = port
-        self.__password: str = password
-
-    def to_dict(self) -> dict:
-        """
-        Convert the configuration to a dictionary. The dictionary will have the keys host for the ``hostname`` of the
-        database server, ``port`` for th port for the database server and ``password`` for the password
-
-        :return: The configuration as a dictionary.
-        """
-        return {
-            "host": self.__host,
-            "port": self.__port,
-            "password": self.__password
-        }
+    host: str = 'localhost'
+    port: int = 6379
+    password: str = ''
 
 
 class RedisFlatConfig(BaseIndexConfig):
