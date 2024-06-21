@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ..base.runner_config import HNSWCase, HNSWTask, InsertConfig, QueryConfig, IndexTime
+from ..base.runner_config import HNSWCase, HNSWTask, InsertConfig, HNSWQueryConfig, IndexTime
 from ...client.redis.redis_client import RedisClient
 from ...client.redis.redis_config import RedisHNSWConfig
 from ...dataset.dataset import Dataset
@@ -20,7 +20,7 @@ class RedisHNSWTask(HNSWTask):
     client: RedisClient
     dataset: Dataset
     insert_config: InsertConfig
-    query_config: QueryConfig
+    query_config: HNSWQueryConfig
 
     def __init__(self, case: HNSWCase):
         """
@@ -34,4 +34,5 @@ class RedisHNSWTask(HNSWTask):
         self.dataset = case.dataset
         ef_search = case.hnsw_config.ef_search
         self.insert_config = InsertConfig(index_time=IndexTime.PRE_INDEX, query_modes=case.query_modes)
-        self.query_config = QueryConfig(ef_search=ef_search, index_config=index_config, query_modes=case.query_modes)
+        self.query_config = HNSWQueryConfig(ef_search=ef_search, index_config=index_config,
+                                            query_modes=case.query_modes)

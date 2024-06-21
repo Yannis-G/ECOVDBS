@@ -1,6 +1,7 @@
 from typing import Optional, Callable
 
-from .runner_config import HNSWTask, IndexTime, InsertConfig, QueryConfig, QueryMode
+from .runner_config import (HNSWTask, IndexTime, InsertConfig, HNSWQueryConfig, QueryMode, InsertRunnerResult,
+                            HNSWQueryEFResult, HNSWQueryModeResult, HNSWQueryRunnerResult, HNSWRunnerResult)
 from ..utility import time_it
 from ...client.base.base_client import BaseClient
 from ...client.base.base_config import BaseHNSWConfig
@@ -9,12 +10,17 @@ from ...dataset.dataset import Dataset
 
 class HNSWRunner:
     def __init__(self, hnsw_task: HNSWTask):
+        self.__client = hnsw_task.client
+        self.__index_config = hnsw_task.query_config.index_config
         self.__insert_runner = InsertRunner(hnsw_task.client, hnsw_task.insert_config, hnsw_task.dataset)
-        self.__query_runner = QueryRunner(hnsw_task.client, hnsw_task.query_config, hnsw_task.dataset)
+        self.__query_runner = HNSWQueryRunner(hnsw_task.client, hnsw_task.query_config, hnsw_task.dataset)
 
     def run(self):
-        self.__insert_runner.run()
-        self.__query_runner.run()
+        insert_result = self.__insert_runner.run()
+        query_result = self.__query_runner.run()
+        index_size = self.__client.index_storage()
+        disk_size = self.__client.disk_storage()
+        return HNSWRunnerResult(self.__client, self.__index_config, insert_result, query_result, index_size, disk_size)
 
 
 class InsertRunner:
@@ -37,7 +43,7 @@ class InsertRunner:
             t_index = 0
         else:
             raise ValueError("Invalid index time")
-        return t_index + t_insert
+        return InsertRunnerResult(t_insert + t_index)
 
     @time_it
     def __insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None) -> None:
@@ -48,8 +54,8 @@ class InsertRunner:
         self.__client.create_index()
 
 
-class QueryRunner:
-    def __init__(self, client: BaseClient, config: QueryConfig, dataset: Dataset):
+class HNSWQueryRunner:
+    def __init__(self, client: BaseClient, config: HNSWQueryConfig, dataset: Dataset) -> None:
         self.__client: BaseClient = client
         self.__ef_search: list[int] = config.ef_search
         self.__index_config: BaseHNSWConfig = config.index_config
@@ -63,13 +69,15 @@ class QueryRunner:
         self.__total_recall: float = 0
         self.__num_queries: int = len(self.__query_vectors)
 
-    def run(self):
+    def run(self) -> HNSWQueryRunnerResult:
+        mode_results: list[HNSWQueryModeResult] = []
         for query_mode in self.__query_mode:
-            print(f"Query Mode: {query_mode}")
-            self.__run_mode(query_mode)
+            mode_results.append(self.__run_mode(query_mode))
+        return HNSWQueryRunnerResult(mode_results)
 
-    def __run_mode(self, query_mode: QueryMode):
+    def __run_mode(self, query_mode: QueryMode) -> HNSWQueryModeResult:
         extended_list, query_func = self.__get_mode_params(query_mode)
+        ef_results: list[HNSWQueryEFResult] = []
         for ef in self.__ef_search:
             self.__index_config.change_ef_search(ef)
             self.total_time = 0
@@ -80,14 +88,13 @@ class QueryRunner:
             else:
                 _, total_duration = self.__run_queries_extended(query_func, extended_list)
 
-            avg_recall = self.total_recall / self.__num_queries
-            avg_query_time = self.total_time / self.__num_queries
-            queries_per_second = self.__num_queries / total_duration
+            avg_recall: float = self.total_recall / self.__num_queries
+            avg_query_time: float = self.total_time / self.__num_queries
+            queries_per_second: float = self.__num_queries / total_duration
 
-            print(f"ef: {ef}")
-            print(f'Average Recall: {avg_recall}')
-            print(f'Average Query Time: {avg_query_time}')
-            print(f'Queries per Second: {queries_per_second}')
+            ef_results.append(HNSWQueryEFResult(ef, avg_recall, avg_query_time, queries_per_second, total_duration,
+                                                self.__num_queries, self.__k))
+        return HNSWQueryModeResult(query_mode, ef_results)
 
     def __get_mode_params(self, query_mode):
         if query_mode == QueryMode.QUERY:
@@ -104,7 +111,7 @@ class QueryRunner:
         return extended_list, query_func
 
     @time_it
-    def __run_queries(self):
+    def __run_queries(self) -> None:
         for q, gt in zip(self.__query_vectors, self.__ground_truth_neighbors):
             res, t = self.__query(q, self.__k)
             recall = len(set(gt) & set(res)) / len(res)
@@ -113,7 +120,7 @@ class QueryRunner:
 
     @time_it
     def __run_queries_extended(self, query_func: Callable[[list[float], int, str | float], list[int]],
-                               extended: list[str | float]):
+                               extended: list[str | float]) -> None:
         for q, gt, e in zip(self.__query_vectors, self.__ground_truth_neighbors, extended):
             res, t = query_func(q, self.__k, e)
             recall = len(set(gt) & set(res)) / len(res)

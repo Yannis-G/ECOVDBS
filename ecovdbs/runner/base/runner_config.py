@@ -40,7 +40,7 @@ class InsertConfig:
 
 
 @dataclass(frozen=True)
-class QueryConfig:
+class HNSWQueryConfig:
     """
     Configuration class for the query operation.
 
@@ -85,7 +85,7 @@ class HNSWTask:
     client: BaseClient
     dataset: Dataset
     insert_config: InsertConfig
-    query_config: QueryConfig
+    query_config: HNSWQueryConfig
 
 
 @dataclass(init=False)
@@ -116,3 +116,40 @@ class TestCase(HNSWCase):
     hnsw_config = HNSWConfig()
     index_time = IndexTime.PRE_INDEX
     query_modes = [QueryMode.FILTERED_QUERY, QueryMode.QUERY]
+
+
+@dataclass(frozen=True)
+class InsertRunnerResult:
+    t_insert_index: float
+
+
+@dataclass(frozen=True)
+class HNSWQueryEFResult:
+    ef: int
+    avg_recall: float
+    avg_query_time: float
+    queries_per_second: float
+    total_time: float
+    num_queries: int
+    k: int
+
+
+@dataclass(frozen=True)
+class HNSWQueryModeResult:
+    mode: QueryMode
+    ef_results: list[HNSWQueryEFResult]
+
+
+@dataclass(frozen=True)
+class HNSWQueryRunnerResult:
+    mode_results: list[HNSWQueryModeResult]
+
+
+@dataclass(frozen=True)
+class HNSWRunnerResult:
+    client: BaseClient
+    index_config: BaseHNSWConfig
+    insert_result: InsertRunnerResult
+    query_result: HNSWQueryRunnerResult
+    index_size: float
+    disk_size: float
