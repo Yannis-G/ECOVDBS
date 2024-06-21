@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 
 from .runner_config import HNSWTask, IndexTime, InsertConfig, QueryConfig, QueryMode
 from ..utility import time_it
@@ -23,7 +23,7 @@ class InsertRunner:
         self.__index_time: IndexTime = config.index_time
         self.__data_vectors: list[list[float]] = dataset.data_vectors
         self.__metadata: Optional[
-            list[str]] = dataset.metadata if config.query_mode == QueryMode.FILTERED_QUERY else None
+            list[str]] = dataset.metadata if QueryMode.FILTERED_QUERY in config.query_modes else None
 
     def run(self):
         if self.__index_time == IndexTime.PRE_INDEX:
@@ -53,7 +53,7 @@ class QueryRunner:
         self.__client: BaseClient = client
         self.__ef_search: list[int] = config.ef_search
         self.__index_config: BaseHNSWConfig = config.index_config
-        self.__query_mode: QueryMode = config.query_mode
+        self.__query_mode: list[QueryMode] = config.query_modes
         self.__query_vectors: list[list[float]] = dataset.query_vectors
         self.__ground_truth_neighbors: list[list[int]] = dataset.ground_truth_neighbors
         self.__keyword_filters: Optional[list[str]] = dataset.keyword_filter
@@ -64,14 +64,20 @@ class QueryRunner:
         self.num_queries: int = len(self.__query_vectors)
 
     def run(self):
-        if self.__query_mode == QueryMode.QUERY:
+        for query_mode in self.__query_mode:
+            print(f"Query Mode: {query_mode}")
+            self.run_mode(query_mode)
+
+    def run_mode(self, query_mode: QueryMode):
+        if query_mode == QueryMode.QUERY:
             query_func = self.query
-        elif self.__query_mode == QueryMode.FILTERED_QUERY and self.__keyword_filters is not None:
+            extended_list = None
+        elif query_mode == QueryMode.FILTERED_QUERY and self.__keyword_filters is not None:
             query_func = self.filtered_query
-            third = self.__keyword_filters
-        elif self.__query_mode == QueryMode.RANGED_QUERY and self.__distances is not None:
+            extended_list = self.__keyword_filters
+        elif query_mode == QueryMode.RANGED_QUERY and self.__distances is not None:
             query_func = self.ranged_query
-            third = self.__distances
+            extended_list = self.__distances
         else:
             raise ValueError("Invalid query mode")
         for ef in self.__ef_search:
@@ -79,10 +85,10 @@ class QueryRunner:
             self.total_time = 0
             self.total_recall = 0
 
-            if self.__query_mode == QueryMode.QUERY:
-                _, total_duration = self.one()
+            if query_mode == QueryMode.QUERY:
+                _, total_duration = self.run_queries()
             else:
-                _, total_duration = self.two(query_func, third)
+                _, total_duration = self.run_queries_extended(query_func, extended_list)
 
             avg_recall = self.total_recall / self.num_queries
             avg_query_time = self.total_time / self.num_queries
@@ -94,7 +100,7 @@ class QueryRunner:
             print(f'Queries per Second: {queries_per_second}')
 
     @time_it
-    def one(self):
+    def run_queries(self):
         for q, gt in zip(self.__query_vectors, self.__ground_truth_neighbors):
             res, t = self.query(q, self.k)
             recall = len(set(gt) & set(res)) / len(res)
@@ -102,9 +108,10 @@ class QueryRunner:
             self.total_time += t
 
     @time_it
-    def two(self, query_func, third):
-        for q, gt, t in zip(self.__query_vectors, self.__ground_truth_neighbors, third):
-            res, t = query_func(q, self.k, t)
+    def run_queries_extended(self, query_func: Callable[[list[float], int, str | float], list[int]],
+                             extended: list[str | float]):
+        for q, gt, e in zip(self.__query_vectors, self.__ground_truth_neighbors, extended):
+            res, t = query_func(q, self.k, e)
             recall = len(set(gt) & set(res)) / len(res)
             self.total_recall += recall
             self.total_time += t

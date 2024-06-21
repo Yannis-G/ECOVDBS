@@ -33,10 +33,10 @@ class InsertConfig:
 
     Attributes:
         index_time: The time at which the index is created (see :class:`IndexTime`).
-        query_mode: The query mode (see :class:`QueryMode`).
+        query_modes: The query modes (see :class:`QueryMode`).
     """
     index_time: IndexTime
-    query_mode: QueryMode
+    query_modes: list[QueryMode]
 
 
 @dataclass(frozen=True)
@@ -47,11 +47,11 @@ class QueryConfig:
     Attributes:
         ef_search: A list of sizes for the dynamic list for the nearest neighbors (used during search).
         index_config: Configuration for the HNSW index (see :class:`BaseHNSWConfig`).
-        query_mode: The query mode (see :class:`QueryMode`).
+        query_modes: The query modes (see :class:`QueryMode`).
     """
     ef_search: list[int]
     index_config: BaseHNSWConfig
-    query_mode: QueryMode
+    query_modes: list[QueryMode]
 
 
 @dataclass
@@ -99,6 +99,8 @@ class HNSWCase:
     """
     dataset: Dataset
     hnsw_config: HNSWConfig
+    index_time: IndexTime
+    query_modes: list[QueryMode]
 
 
 @dataclass(init=False)
@@ -112,3 +114,5 @@ class TestCase(HNSWCase):
         os.path.join(os.getenv("PYTHONPATH").split(";")[0], "data/siftsmall/siftsmall_groundtruth.ivecs")),
                       [str(i) for i in range(10_000)], [str(i) for i in range(10_000)])
     hnsw_config = HNSWConfig()
+    index_time = IndexTime.PRE_INDEX
+    query_modes = [QueryMode.FILTERED_QUERY, QueryMode.QUERY]
