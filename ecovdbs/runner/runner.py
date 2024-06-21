@@ -3,10 +3,10 @@ from typing import Optional, Callable
 from .result_config import (InsertRunnerResult, HNSWQueryEFResult, HNSWQueryModeResult, HNSWQueryRunnerResult,
                             HNSWRunnerResult)
 from .task_config import HNSWTask, IndexTime, InsertConfig, HNSWQueryConfig, QueryMode
-from ..utility import time_it
-from ...client.base.base_client import BaseClient
-from ...client.base.base_config import BaseHNSWConfig
-from ...dataset.dataset import Dataset
+from .utility import time_it
+from ..client.base.base_client import BaseClient
+from ..client.base.base_config import BaseHNSWConfig
+from ..dataset.dataset import Dataset
 
 
 class HNSWRunner:

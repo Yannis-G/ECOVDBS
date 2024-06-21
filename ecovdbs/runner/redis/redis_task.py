@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from ..base.case_config import HNSWCase
-from ..base.task_config import HNSWTask, InsertConfig, HNSWQueryConfig, IndexTime
+from ..case_config import HNSWCase
+from ..task_config import HNSWTask, InsertConfig, HNSWQueryConfig, IndexTime
 from ...client.redis.redis_client import RedisClient
 from ...client.redis.redis_config import RedisHNSWConfig
 from ...dataset.dataset import Dataset
