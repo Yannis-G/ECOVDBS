@@ -2,8 +2,7 @@ import os
 from dataclasses import dataclass, field
 from enum import Enum
 
-from ...client.base.base_client import BaseClient
-from ...client.base.base_config import BaseHNSWConfig, MetricType
+from ...client.base.base_config import MetricType
 from ...dataset.dataset import Dataset
 from ...dataset.utility import fvecs_read, ivecs_read
 
@@ -11,6 +10,11 @@ from ...dataset.utility import fvecs_read, ivecs_read
 class IndexTime(Enum):
     """
     Enum class for the time at which the index is created.
+
+    Attributes:
+        PRE_INDEX: Indicates the index is created before insertion.
+        POST_INDEX: Indicates the index is created after insertion.
+        NO_INDEX: Indicates no index is created.
     """
     PRE_INDEX = 0
     POST_INDEX = 1
@@ -20,38 +24,15 @@ class IndexTime(Enum):
 class QueryMode(Enum):
     """
     Enum class for the query mode.
+
+    Attributes:
+        QUERY: Regular query mode.
+        FILTERED_QUERY: Query mode with filtering applied.
+        RANGED_QUERY: Query mode with a specified range.
     """
     QUERY = 0
     FILTERED_QUERY = 1
     RANGED_QUERY = 2
-
-
-@dataclass(frozen=True)
-class InsertConfig:
-    """
-    Configuration class for the insertion operation.
-
-    Attributes:
-        index_time: The time at which the index is created (see :class:`IndexTime`).
-        query_modes: The query modes (see :class:`QueryMode`).
-    """
-    index_time: IndexTime
-    query_modes: list[QueryMode]
-
-
-@dataclass(frozen=True)
-class HNSWQueryConfig:
-    """
-    Configuration class for the query operation.
-
-    Attributes:
-        ef_search: A list of sizes for the dynamic list for the nearest neighbors (used during search).
-        index_config: Configuration for the HNSW index (see :class:`BaseHNSWConfig`).
-        query_modes: The query modes (see :class:`QueryMode`).
-    """
-    ef_search: list[int]
-    index_config: BaseHNSWConfig
-    query_modes: list[QueryMode]
 
 
 @dataclass
@@ -72,23 +53,6 @@ class HNSWConfig:
 
 
 @dataclass(init=False)
-class HNSWTask:
-    """
-    Task class for HNSW operations, including configuration, client, and dataset.
-
-    Attributes:
-        client: The client to interact with the HNSW index (see :class:`BaseClient`).
-        dataset: The dataset to be used for the task (see :class:`Dataset`).
-        insert_config: Configuration for the insertion operation (see :class:`InsertConfig`).
-        query_config: Configuration for the query operation (see :class:`QueryConfig`).
-    """
-    client: BaseClient
-    dataset: Dataset
-    insert_config: InsertConfig
-    query_config: HNSWQueryConfig
-
-
-@dataclass(init=False)
 class HNSWCase:
     """
     Case class for running HNSW tasks, including the dataset and configuration.
@@ -96,6 +60,8 @@ class HNSWCase:
     Attributes:
         dataset: The dataset to be used for the case (see :class:`Dataset`).
         hnsw_config: Configuration for the HNSW algorithm (see :class:`HNSWConfig`).
+        index_time: The time at which the index is created (see :class:`IndexTime`).
+        query_modes: A list of query modes to be used (see :class:`QueryMode`).
     """
     dataset: Dataset
     hnsw_config: HNSWConfig
@@ -116,40 +82,3 @@ class TestCase(HNSWCase):
     hnsw_config = HNSWConfig()
     index_time = IndexTime.PRE_INDEX
     query_modes = [QueryMode.FILTERED_QUERY, QueryMode.QUERY]
-
-
-@dataclass(frozen=True)
-class InsertRunnerResult:
-    t_insert_index: float
-
-
-@dataclass(frozen=True)
-class HNSWQueryEFResult:
-    ef: int
-    avg_recall: float
-    avg_query_time: float
-    queries_per_second: float
-    total_time: float
-    num_queries: int
-    k: int
-
-
-@dataclass(frozen=True)
-class HNSWQueryModeResult:
-    mode: QueryMode
-    ef_results: list[HNSWQueryEFResult]
-
-
-@dataclass(frozen=True)
-class HNSWQueryRunnerResult:
-    mode_results: list[HNSWQueryModeResult]
-
-
-@dataclass(frozen=True)
-class HNSWRunnerResult:
-    client: BaseClient
-    index_config: BaseHNSWConfig
-    insert_result: InsertRunnerResult
-    query_result: HNSWQueryRunnerResult
-    index_size: float
-    disk_size: float
