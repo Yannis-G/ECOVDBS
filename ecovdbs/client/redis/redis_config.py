@@ -1,5 +1,7 @@
-from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
 from dataclasses import dataclass
+from typing import Optional
+
+from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
 
 
 @dataclass(frozen=True)
@@ -22,8 +24,8 @@ class RedisFlatConfig(BaseIndexConfig):
     Configuration class for the Flat index type in Redis.
     """
 
-    def __init__(self, metric_type: MetricType, data_type: str = "FLOAT32", initial_cap: int | None = None,
-                 block_size: int | None = None) -> None:
+    def __init__(self, metric_type: MetricType, data_type: str = "FLOAT32", initial_cap: Optional[int] = None,
+                 block_size: Optional[int] = None) -> None:
         """
         Initialize the RedisFlatConfig with the specified parameters.
 
@@ -37,10 +39,10 @@ class RedisFlatConfig(BaseIndexConfig):
         self.__type = data_type
         self.__index_type: IndexType = IndexType.Flat
         self.__metric_type: MetricType = metric_type
-        self.__initial_cap: int | None = initial_cap
-        self.__block_size: int | None = block_size
+        self.__initial_cap: Optional[int] = initial_cap
+        self.__block_size: Optional[int] = block_size
 
-    def index_param(self) -> dict | None:
+    def index_param(self) -> dict:
         """
         Generate the index parameters dictionary. The directory contain the keys ``index`` for the index and ``param``
         for a  directory with params for the index. ``param`` contains the keys``TYPE`` and ``DISTANCE_METRIC`` and may
@@ -62,7 +64,7 @@ class RedisFlatConfig(BaseIndexConfig):
             "param": param
         }
 
-    def search_param(self) -> dict | None:
+    def search_param(self) -> None:
         """
         No need in Redis DB, only Params needed for index creation in the collection creation process
 
@@ -76,9 +78,9 @@ class RedisHNSWConfig(BaseHNSWConfig):
     Configuration class for the HNSW index type in Redis.
     """
 
-    def __init__(self, metric_type: MetricType, data_type: str = "FLOAT32", initial_cap: int | None = None,
-                 M: int | None = None, ef_construction: int | None = None, ef_runtime: int | None = None,
-                 epsilon: int | None = None):
+    def __init__(self, metric_type: MetricType, data_type: str = "FLOAT32", initial_cap: Optional[int] = None,
+                 M: Optional[int] = None, ef_construction: Optional[int] = None, ef_runtime: Optional[int] = None,
+                 epsilon: Optional[int] = None):
         """
         Initialize the RedisHNSWConfig with the specified parameters.
 
@@ -99,13 +101,13 @@ class RedisHNSWConfig(BaseHNSWConfig):
         self.__type = data_type
         self.__index_type: IndexType = IndexType.HNSW
         self.__metric_type: MetricType = metric_type
-        self.__initial_cap: int | None = initial_cap
-        self.__M: int | None = M
-        self.__ef_construction: int | None = ef_construction
-        self.__ef_runtime: int | None = ef_runtime
-        self.__epsilon: int | None = epsilon
+        self.__initial_cap: Optional[int] = initial_cap
+        self.__M: Optional[int] = M
+        self.__ef_construction: Optional[int] = ef_construction
+        self.__ef_runtime: Optional[int] = ef_runtime
+        self.__epsilon: Optional[int] = epsilon
 
-    def index_param(self) -> dict | None:
+    def index_param(self) -> dict:
         """
         Generate the index parameters dictionary. The directory contain the keys ``index`` for the index and ``param``
         for a  directory with params for the index. ``param`` contains the keys``TYPE`` and ``DISTANCE_METRIC`` and may
@@ -133,7 +135,7 @@ class RedisHNSWConfig(BaseHNSWConfig):
             "param": param
         }
 
-    def search_param(self) -> dict | None:
+    def search_param(self) -> Optional[dict]:
         """
         Generate the search parameters dictionary. The directory may contain the key ``EF_RUNTIME`` if the value is
         different from the default value of the database.

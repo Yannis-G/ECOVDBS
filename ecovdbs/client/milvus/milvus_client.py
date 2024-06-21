@@ -1,9 +1,10 @@
 import logging
+from typing import Optional
 
 from pymilvus import DataType, connections, FieldSchema, CollectionSchema, Collection, utility, SearchResult
 
-from ..base.base_client import BaseClient, BaseIndexConfig
 from .milvus_config import MilvusConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class MilvusClient(BaseClient):
         self.__collection: Collection = Collection(self.__collection_name, schema)
         log.info("Milvus client initialized")
 
-    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
         log.info(f"Inserting {len(embeddings)} vectors into database")
         if not metadata or len(metadata) != len(embeddings):
             metadata = ["" for _ in range(len(embeddings))]
@@ -59,7 +60,8 @@ class MilvusClient(BaseClient):
         self.__collection.insert(data=data)
         self.__collection.flush()
 
-    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
         """
         Not implemented.
         """

@@ -1,4 +1,6 @@
 from abc import abstractmethod, ABC
+from typing import Optional
+
 from .base_config import BaseIndexConfig, BaseConfig
 
 
@@ -19,7 +21,7 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
         """
         Insert embeddings into the database. The ids for the vector a starting with ``start_id`` and a counted
         upwards.
@@ -31,7 +33,8 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
         """
         Insert embeddings into the database in batches to improve efficiency. The ids for the vector a starting with
         ``start_id`` and a counted upwards.

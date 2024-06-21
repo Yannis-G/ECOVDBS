@@ -1,11 +1,12 @@
 import logging
+from typing import Optional
 
 import psycopg
 from pgvector.psycopg import register_vector
 from psycopg import Connection, sql, Cursor
 
-from ..base.base_client import BaseClient, BaseIndexConfig
 from .pgvector_config import PgvectorConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 from ..utility import bytes_to_mb
 
 log = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ class PgvectorClient(BaseClient):
         self.__conn.commit()
         log.info("Pgvector client initialized")
 
-    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
         log.info(f"Inserting {len(embeddings)} vectors into database")
         if not metadata or len(metadata) != len(embeddings):
             metadata = ["" for _ in range(len(embeddings))]
@@ -81,7 +82,8 @@ class PgvectorClient(BaseClient):
                 copy.write_row((i + start_id, embedding, metadata[i]))
         self.__conn.commit()
 
-    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
         """
         Not implemented.
         """

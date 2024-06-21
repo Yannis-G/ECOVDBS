@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import Optional
 
 
 class MetricType(Enum):
@@ -40,7 +41,7 @@ class BaseIndexConfig(ABC):
     """
 
     @abstractmethod
-    def index_param(self) -> dict | None:
+    def index_param(self) -> Optional[dict]:
         """
         Get the parameters for the index.
 
@@ -49,7 +50,7 @@ class BaseIndexConfig(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def search_param(self) -> dict | None:
+    def search_param(self) -> Optional[dict]:
         """
         Get the parameters for search.
 

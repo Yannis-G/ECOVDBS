@@ -1,5 +1,7 @@
-from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
 from dataclasses import dataclass
+from typing import Optional
+
+from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
 
 
 @dataclass(frozen=True)
@@ -28,9 +30,9 @@ class PgvectorHNSWConfig(BaseHNSWConfig):
     Also, an index can be created without any data in the table since there isn’t a training step like IVFFlat.
     """
 
-    def __init__(self, metric_type: MetricType, m: int | None = None, ef_construction: int | None = None,
-                 ef_search: int | None = None, maintenance_work_mem: str | None = None,
-                 max_parallel_maintenance_workers: int | None = None):
+    def __init__(self, metric_type: MetricType, m: Optional[int] = None, ef_construction: Optional[int] = None,
+                 ef_search: Optional[int] = None, maintenance_work_mem: Optional[str] = None,
+                 max_parallel_maintenance_workers: Optional[int] = None):
         """
         Initialize the PgvectorHNSWConfig with specified parameters.
 
@@ -46,13 +48,13 @@ class PgvectorHNSWConfig(BaseHNSWConfig):
         """
         self.__index_type: IndexType = IndexType.HNSW
         self.__metric_type = metric_type
-        self.__m: int | None = m
-        self.__ef_construction: int | None = ef_construction
-        self.__ef_search: int | None = ef_search
-        self.__maintenance_work_mem: str | None = maintenance_work_mem
-        self.__max_parallel_maintenance_workers: int = max_parallel_maintenance_workers
+        self.__m: Optional[int] = m
+        self.__ef_construction: Optional[int] = ef_construction
+        self.__ef_search: Optional[int] = ef_search
+        self.__maintenance_work_mem: Optional[str] = maintenance_work_mem
+        self.__max_parallel_maintenance_workers: Optional[int] = max_parallel_maintenance_workers
 
-    def index_param(self) -> dict | None:
+    def index_param(self) -> dict:
         """
         Generate the index parameters dictionary. The directory contain the keys ``index_type`` and ``metric_type``
         for the corresponding type. The keys ``with`` and ``set`` contain an empty directory but may contain further
@@ -78,7 +80,7 @@ class PgvectorHNSWConfig(BaseHNSWConfig):
             param["set"]["max_parallel_maintenance_workers"] = self.__max_parallel_maintenance_workers
         return param
 
-    def search_param(self) -> dict | None:
+    def search_param(self) -> dict:
         """
         Generate the search parameters dictionary. The directory contain the keys ``metric_operator`` for the operator
         and ``set`` as an empty dictionary. ``set`` may contain the key ``hnsw.ef_search`` if the value is different
@@ -110,8 +112,8 @@ class PgvectorIVFFlatConfig(BaseIndexConfig):
         - When querying, specify an appropriate number of probes (higher is better for recall, lower is better for speed) - a good place to start is ``sqrt(lists)``
     """
 
-    def __init__(self, metric_type: MetricType, lists: int, probes: int | None = None,
-                 max_parallel_maintenance_workers: int | None = None):
+    def __init__(self, metric_type: MetricType, lists: int, probes: Optional[int] = None,
+                 max_parallel_maintenance_workers: Optional[int] = None):
         """
         Initialize the PgvectorIVFFlatConfig with specified parameters. For more details
         see :class:`PgvectorIVFFlatConfig`.
@@ -124,10 +126,10 @@ class PgvectorIVFFlatConfig(BaseIndexConfig):
         self.__index_type: IndexType = IndexType.HNSW
         self.__metric_type = metric_type
         self.__lists: int = lists
-        self.__probes: int | None = probes
-        self.__max_parallel_maintenance_workers: int = max_parallel_maintenance_workers
+        self.__probes: Optional[int] = probes
+        self.__max_parallel_maintenance_workers: Optional[int] = max_parallel_maintenance_workers
 
-    def index_param(self) -> dict | None:
+    def index_param(self) -> dict:
         """
         Generate the index parameters dictionary. The directory contain the keys ``index_type`` and ``metric_type``
         for the corresponding type. The key ``with`` contains a directory with the key ``lists``. The key ``set``
@@ -148,7 +150,7 @@ class PgvectorIVFFlatConfig(BaseIndexConfig):
             param["set"]["max_parallel_maintenance_workers"] = self.__max_parallel_maintenance_workers
         return param
 
-    def search_param(self) -> dict | None:
+    def search_param(self) -> dict:
         """
         Generate the search parameters dictionary. The directory contain the keys ``metric_operator`` for the operator
         and ``set`` as an empty dictionary. ``set`` may contain the key ``ivfflat.probes`` if the value is different

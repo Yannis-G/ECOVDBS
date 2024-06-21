@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import numpy as np
 from redis import Redis
@@ -6,8 +7,8 @@ from redis.commands.search.field import VectorField, TextField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 
-from ..base.base_client import BaseClient, BaseIndexConfig
 from .redis_config import RedisConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 from ..utility import bytes_to_mb
 
 log = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ class RedisClient(BaseClient):
         self.__client.flushdb()
         log.info("Redis client initialized")
 
-    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
         log.info(f"Inserting {len(embeddings)} vectors into database")
         pipeline = self.__client.pipeline()
         if not metadata or len(metadata) != len(embeddings):
@@ -57,7 +58,8 @@ class RedisClient(BaseClient):
                                    self.__metadata_name: metadata[i]})
         pipeline.execute()
 
-    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
         """
         Not implemented.
         """

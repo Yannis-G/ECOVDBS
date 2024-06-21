@@ -1,12 +1,14 @@
+import logging
+from typing import Optional
+
 import chromadb
 import docker
-import logging
 from chromadb import ClientAPI, Collection, QueryResult
 from chromadb.utils.batch_utils import create_batches
 from docker.errors import NotFound, APIError
 
-from ..base.base_client import BaseClient, BaseIndexConfig
 from .chroma_config import ChromaConfig, ChromaHNSWConfig
+from ..base.base_client import BaseClient, BaseIndexConfig
 from ..utility import bytes_to_mb
 
 log = logging.getLogger(__name__)
@@ -53,18 +55,19 @@ class ChromaClient(BaseClient):
                                                                                metadata=self.__index_config.index_param())
         log.info("Chroma client initialized")
 
-    def insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
         ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
         # self.__client.max_batch_size >> 41666
         self.__collection.add(ids=ids, embeddings=embeddings, metadatas=metadata)
 
-    def batch_insert(self, embeddings: list[list[float]], metadata: list[str] | None = None, start_id: int = 0) -> None:
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
         ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
         batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings, metadatas=metadata)
         for batch in batches:
             self.__collection.add(ids=batch[0], embeddings=batch[1], metadatas=batch[2])
 
-    def __pre_insert(self, len_embeddings: int, metadata: list[str] | None, start_id: int):
+    def __pre_insert(self, len_embeddings: int, metadata: Optional[list[str]], start_id: int):
         """
         Prepare data for insertion into the database.
 

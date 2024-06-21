@@ -15,7 +15,7 @@ def download(src_url: str, dest_path: str) -> None:
         urlretrieve(src_url, dest_path)
 
 
-def fvecs_read(filename, bounds=None) -> list[list[int]]:
+def fvecs_read(filename: str, bounds: tuple[int, int] = None) -> list[list[int]]:
     """
     Read a file in fvecs format. This code is a python translation of http://corpus-texmex.irisa.fr/fvecs_read.m
 
@@ -26,7 +26,7 @@ def fvecs_read(filename, bounds=None) -> list[list[int]]:
     return __xvecs_read(filename, np.float32, bounds).tolist()
 
 
-def ivecs_read(filename, bounds=None) -> list[list[int]]:
+def ivecs_read(filename: str, bounds: tuple[int, int] = None) -> list[list[int]]:
     """
     Read a file in ivecs format. This code is a python translation of http://corpus-texmex.irisa.fr/ivecs_read.m
 
@@ -37,7 +37,7 @@ def ivecs_read(filename, bounds=None) -> list[list[int]]:
     return __xvecs_read(filename, np.int32, bounds).tolist()
 
 
-def __xvecs_read(filename, dtype: np.int32 | np.float32, bounds=None):
+def __xvecs_read(filename: str, dtype: np.int32 | np.float32, bounds: tuple[int, int] = None):
     """
     Read a file in ivecs(dtype=np.int32) or fvecs(dtype=np.float32) format. This code is a python translation of
     http://corpus-texmex.irisa.fr/ivecs_read.m and http://corpus-texmex.irisa.fr/fvecs_read.m
