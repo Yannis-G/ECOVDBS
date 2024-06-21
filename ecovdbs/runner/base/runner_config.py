@@ -1,10 +1,44 @@
 import os
-
-from ...dataset.dataset import Dataset
-from ...client.base.base_config import BaseHNSWConfig, MetricType
-from ...client.base.base_client import BaseClient
 from dataclasses import dataclass, field
+from enum import Enum
+
+from ...client.base.base_client import BaseClient
+from ...client.base.base_config import BaseHNSWConfig, MetricType
+from ...dataset.dataset import Dataset
 from ...dataset.utility import fvecs_read, ivecs_read
+
+
+class IndexTime(Enum):
+    """
+    Enum class for the time at which the index is created.
+    """
+    PRE_INDEX = 0
+    POST_INDEX = 1
+    NO_INDEX = 2
+
+
+@dataclass(frozen=True)
+class InsertConfig:
+    """
+    Configuration class for the insertion operation.
+
+    Attributes:
+        index_time: The time at which the index is created (see :class:`IndexTime`).
+    """
+    index_time: IndexTime
+
+
+@dataclass(frozen=True)
+class QueryConfig:
+    """
+    Configuration class for the query operation.
+
+    Attributes:
+        ef_search: A list of sizes for the dynamic list for the nearest neighbors (used during search).
+        index_config: Configuration for the HNSW index (see :class:`BaseHNSWConfig`).
+    """
+    ef_search: list[int]
+    index_config: BaseHNSWConfig
 
 
 @dataclass
@@ -30,15 +64,15 @@ class HNSWTask:
     Task class for HNSW operations, including configuration, client, and dataset.
 
     Attributes:
-        index_config: Configuration for the HNSW index (see :class:`BaseHNSWConfig`).
         client: The client to interact with the HNSW index (see :class:`BaseClient`).
         dataset: The dataset to be used for the task (see :class:`Dataset`).
-        ef_search: A list of sizes for the dynamic list for the nearest neighbors (used during search).
+        insert_config: Configuration for the insertion operation (see :class:`InsertConfig`).
+        query_config: Configuration for the query operation (see :class:`QueryConfig`).
     """
-    index_config: BaseHNSWConfig
     client: BaseClient
     dataset: Dataset
-    ef_search: list[int]
+    insert_config: InsertConfig
+    query_config: QueryConfig
 
 
 @dataclass(init=False)

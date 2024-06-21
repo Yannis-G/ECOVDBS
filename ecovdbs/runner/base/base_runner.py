@@ -1,19 +1,13 @@
-import time
-
-from .runner_config import HNSWTask
-from ...client.base.base_client import BaseClient
-from ...client.base.base_config import BaseHNSWConfig
-from ...dataset.dataset import Dataset
+from .runner_config import HNSWTask, IndexTime, InsertConfig, QueryConfig
 from ..utility import time_it
+from ...client.base.base_client import BaseClient
+from ...dataset.dataset import Dataset
 
 
 class HNSWRunner:
     def __init__(self, hnsw_task: HNSWTask):
-        self.__client = hnsw_task.client
-        self.__index_config = hnsw_task.index_config
-        self.__dataset = hnsw_task.dataset
-        self.__insert_runner = InsertRunner(self.__client, None, self.__dataset)
-        self.__query_runner = QueryRunner(self.__client, (hnsw_task.ef_search, self.__index_config), self.__dataset)
+        self.__insert_runner = InsertRunner(hnsw_task.client, hnsw_task.insert_config, hnsw_task.dataset)
+        self.__query_runner = QueryRunner(hnsw_task.client, hnsw_task.query_config, hnsw_task.dataset)
 
     def run(self):
         self.__insert_runner.run()
@@ -21,14 +15,23 @@ class HNSWRunner:
 
 
 class InsertRunner:
-    def __init__(self, client: BaseClient, config, dataset: Dataset):
+    def __init__(self, client: BaseClient, config: InsertConfig, dataset: Dataset):
         self.__client = client
-        self.__config = config
+        self.__index_time = config.index_time
         self.__dataset = dataset
 
     def run(self):
-        _, t_index = self.create_index()
-        _, t_insert = self.insert(self.__dataset.data_vectors)
+        if self.__index_time == IndexTime.PRE_INDEX:
+            _, t_index = self.create_index()
+            _, t_insert = self.insert(self.__dataset.data_vectors)
+        elif self.__index_time == IndexTime.POST_INDEX:
+            _, t_insert = self.insert(self.__dataset.data_vectors)
+            _, t_index = self.create_index()
+        elif self.__index_time == IndexTime.NO_INDEX:
+            _, t_insert = self.insert(self.__dataset.data_vectors)
+            t_index = 0
+        else:
+            raise ValueError("Invalid index time")
         return t_index + t_insert
 
     @time_it
@@ -41,7 +44,7 @@ class InsertRunner:
 
 
 class QueryRunner:
-    def __init__(self, client: BaseClient, config: tuple[list, BaseHNSWConfig], dataset: Dataset):
+    def __init__(self, client: BaseClient, config: QueryConfig, dataset: Dataset):
         self.__client: BaseClient = client
         self.__config = config
         self.__dataset: Dataset = dataset
@@ -51,8 +54,8 @@ class QueryRunner:
         self.num_queries: int = len(self.__dataset.query_vectors)
 
     def run(self):
-        for ef in self.__config[0]:
-            self.__config[1].change_ef_search(ef)
+        for ef in self.__config.ef_search:
+            self.__config.index_config.change_ef_search(ef)
             self.total_time = 0
             self.total_recall = 0
 
