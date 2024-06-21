@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from .case_config import IndexTime, QueryMode
-from ..client.base.base_client import BaseClient
-from ..client.base.base_config import BaseHNSWConfig
+from ..client.base_client import BaseClient
+from ..client.base_config import BaseHNSWConfig
 from ..dataset.dataset import Dataset
 
 

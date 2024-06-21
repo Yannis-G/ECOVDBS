@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from .task_config import QueryMode
-from ..client.base.base_client import BaseClient
-from ..client.base.base_config import BaseHNSWConfig
+from ..client.base_client import BaseClient
+from ..client.base_config import BaseHNSWConfig
 
 
 @dataclass(frozen=True)

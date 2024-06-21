@@ -8,7 +8,8 @@ from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 
 from .redis_config import RedisConfig
-from ..base.base_client import BaseClient, BaseIndexConfig
+from ..base_client import BaseClient
+from ..base_config import BaseIndexConfig
 from ..utility import bytes_to_mb
 
 log = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from ..base.base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
+from ..base_config import BaseConfig, BaseIndexConfig, MetricType, IndexType, BaseHNSWConfig
 
 
 @dataclass(frozen=True)

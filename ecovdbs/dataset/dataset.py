@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from ..client.base.base_config import MetricType
+from ..client.base_config import MetricType
 
 
 @dataclass(frozen=True)

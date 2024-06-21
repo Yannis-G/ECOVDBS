@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass, field
 from enum import Enum
 
-from ..client.base.base_config import MetricType
+from ..client.base_config import MetricType
 from ..dataset.dataset import Dataset
 from ..dataset.utility import fvecs_read, ivecs_read
 

@@ -4,7 +4,8 @@ from typing import Optional
 from pymilvus import DataType, connections, FieldSchema, CollectionSchema, Collection, utility, SearchResult
 
 from .milvus_config import MilvusConfig
-from ..base.base_client import BaseClient, BaseIndexConfig
+from ..base_client import BaseClient
+from ..base_config import BaseIndexConfig
 
 log = logging.getLogger(__name__)
 

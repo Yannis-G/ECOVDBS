@@ -8,7 +8,8 @@ from chromadb.utils.batch_utils import create_batches
 from docker.errors import NotFound, APIError
 
 from .chroma_config import ChromaConfig, ChromaHNSWConfig
-from ..base.base_client import BaseClient, BaseIndexConfig
+from ..base_client import BaseClient
+from ..base_config import BaseIndexConfig
 from ..utility import bytes_to_mb
 
 log = logging.getLogger(__name__)
