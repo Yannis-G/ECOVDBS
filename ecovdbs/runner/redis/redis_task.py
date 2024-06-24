@@ -34,6 +34,7 @@ class RedisHNSWTask(HNSWTask):
         self.client = RedisClient(dimension=case.dataset.dimension, index_config=index_config)
         self.dataset = case.dataset
         ef_search = case.hnsw_config.ef_search
-        self.insert_config = InsertConfig(index_time=IndexTime.PRE_INDEX, query_modes=case.query_modes)
+        index_time = case.index_time if case.index_time is not IndexTime.NO_INDEX else IndexTime.PRE_INDEX
+        self.insert_config = InsertConfig(index_time=index_time, query_modes=case.query_modes)
         self.query_config = HNSWQueryConfig(ef_search=ef_search, index_config=index_config,
                                             query_modes=case.query_modes)

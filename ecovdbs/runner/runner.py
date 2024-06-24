@@ -185,7 +185,7 @@ class HNSWQueryRunner:
         """
         for q, gt in zip(self.__query_vectors, self.__ground_truth_neighbors):
             res, t = self.__query(q, self.__k)
-            recall = len(set(gt) & set(res)) / len(res)
+            recall = len(set(gt) & set(res)) / self.__k
             self.total_recall += recall
             self.total_time += t
 
@@ -200,7 +200,7 @@ class HNSWQueryRunner:
         """
         for q, gt, e in zip(self.__query_vectors, self.__ground_truth_neighbors, extended):
             res, t = query_func(q, self.__k, e)
-            recall = len(set(gt) & set(res)) / len(res)
+            recall = len(set(gt) & set(res)) / self.__k
             self.total_recall += recall
             self.total_time += t
 
