@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Callable
 
 from .result_config import (InsertRunnerResult, HNSWQueryEFResult, HNSWQueryModeResult, HNSWQueryRunnerResult,
@@ -7,6 +8,8 @@ from .utility import time_it
 from ..client.base_client import BaseClient
 from ..client.base_config import BaseHNSWConfig
 from ..dataset.dataset import Dataset
+
+log = logging.getLogger(__name__)
 
 
 class HNSWRunner:
@@ -63,6 +66,7 @@ class InsertRunner:
 
         :return: Result of the insert operation (see :class:`InsertRunnerResult`).
         """
+        log.info("Start InsertRunner for client %s", type(self.__client).__name__)
         if self.__index_time == IndexTime.PRE_INDEX:
             _, t_index = self.__create_index()
             _, t_insert = self.__insert(self.__data_vectors, self.__metadata)
@@ -84,6 +88,7 @@ class InsertRunner:
         :param embeddings: List of data vectors to be inserted.
         :param metadata: Optional list of metadata corresponding to the data vectors.
         """
+        log.info("Insert %d embeddings", len(embeddings))
         self.__client.insert(embeddings, metadata)
 
     @time_it
@@ -91,6 +96,7 @@ class InsertRunner:
         """
         Create the HNSW index in the database.
         """
+        log.info("Create index")
         self.__client.create_index()
 
 
@@ -126,6 +132,7 @@ class HNSWQueryRunner:
 
         :return: Results of the query operation (see :class:`HNSWQueryRunnerResult`).
         """
+        log.info("Start QueryRunner for client %s", type(self.__client).__name__)
         mode_results: list[HNSWQueryModeResult] = []
         for query_mode in self.__query_mode:
             mode_results.append(self.__run_mode(query_mode))
@@ -138,6 +145,7 @@ class HNSWQueryRunner:
         :param query_mode: The query mode to run (see :class:`QueryMode`).
         :return: Results of the queries for the specific mode (see :class:`HNSWQueryModeResult`).
         """
+        log.info(f"Run %d queries for mode %s", self.__num_queries * len(self.__ef_search), query_mode.name)
         extended_list, query_func = self.__get_mode_params(query_mode)
         ef_results: list[HNSWQueryEFResult] = []
         for ef in self.__ef_search:
@@ -145,6 +153,7 @@ class HNSWQueryRunner:
             self.total_time = 0
             self.total_recall = 0
 
+            log.info("Run %d queries for ef %d", self.__num_queries, ef)
             if query_mode == QueryMode.QUERY:
                 _, total_duration = self.__run_queries()
             else:
