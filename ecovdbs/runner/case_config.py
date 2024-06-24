@@ -45,11 +45,11 @@ class HNSWConfig:
         ef_construction: The size of the dynamic list for the nearest neighbors (used during the index construction).
             Default is 200.
         ef_search: A list of sizes for the dynamic list for the nearest neighbors (used during search). Default is a
-            list of values [10, 20, 40, 80, 120, 200, 400, 800].
+            list of values [120, 200, 400, 800].
     """
     M: int = 24
     ef_construction: int = 200
-    ef_search: list[int] = field(default_factory=lambda: [10, 20, 40, 80, 120, 200, 400, 800])
+    ef_search: list[int] = field(default_factory=lambda: [120, 200, 400, 800])
 
 
 @dataclass(init=False)
