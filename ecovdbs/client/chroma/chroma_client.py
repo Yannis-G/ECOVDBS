@@ -32,6 +32,7 @@ class ChromaClient(BaseClient):
         """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
+        self.__search_param = self.__index_config.search_param()
         self.__collection_name: str = "ecovdbs"
         self.__metadata_field: str = "metadata"
         self.__persistence_directory = "/chroma/chroma"
@@ -144,8 +145,11 @@ class ChromaClient(BaseClient):
         """
         Update collections metadata.
         """
-        self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
-                                                                               metadata=self.__index_config.search_param())
+        search_param = self.__index_config.search_param()
+        if search_param != self.__search_param:
+            self.__search_param = search_param
+            self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
+                                                                                   metadata=self.__index_config.search_param())
 
     #
     def query(self, query: list[float], k: int) -> list[int]:
