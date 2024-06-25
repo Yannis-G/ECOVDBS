@@ -20,7 +20,7 @@ def plot_insert_time(results: list[HNSWRunnerResult]):
     plt.show()
 
 
-def plot_query_performance(results: list[HNSWRunnerResult]):
+def plot_qps_recall(results: list[HNSWRunnerResult]):
     # Extract all unique modes from the results
     modes = {mode_result.mode for result in results for mode_result in result.query_result.mode_results}
 
@@ -42,7 +42,34 @@ def plot_query_performance(results: list[HNSWRunnerResult]):
 
         ax.set_xlabel('Average Recall')
         ax.set_ylabel('Queries Per Second')
-        ax.set_title(f'Query Performance for Mode: {mode.name}')
+        ax.set_title(f'Queries Per Second/Recall for Mode: {mode.name}')
+        ax.legend()
+        plt.show()
+
+
+def plot_query_time_recall(results: list[HNSWRunnerResult]):
+    # Extract all unique modes from the results
+    modes = {mode_result.mode for result in results for mode_result in result.query_result.mode_results}
+
+    # Plot data for each mode separately
+    for mode in modes:
+        fig, ax = plt.subplots()
+
+        for result in results:
+            runner_label = type(result.client).__name__
+            for mode_result in result.query_result.mode_results:
+                if mode_result.mode == mode:
+                    recalls = []
+                    avg_query_times = []
+                    for ef_result in mode_result.ef_results:
+                        recalls.append(ef_result.avg_recall)
+                        avg_query_times.append(ef_result.avg_query_time)
+                        ax.annotate(ef_result.ef, (ef_result.avg_recall, ef_result.avg_query_time))
+                    ax.plot(recalls, avg_query_times, marker='o', label=runner_label)
+
+        ax.set_xlabel('Average Recall')
+        ax.set_ylabel('Average Query Time (seconds)')
+        ax.set_title(f'Average Query Time (seconds)/Recall for Mode: {mode.name}')
         ax.legend()
         plt.show()
 
