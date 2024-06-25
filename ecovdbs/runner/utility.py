@@ -1,6 +1,6 @@
 import json
 import time
-from dataclasses import asdict, is_dataclass, fields
+from dataclasses import is_dataclass, fields
 from enum import Enum
 from functools import wraps
 from typing import Any, Callable

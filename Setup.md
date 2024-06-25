@@ -11,8 +11,10 @@ docker commpose up -d
 ## Install Chroma in Docker
 
 ````bash
-docker run -d --name chromadb -p 8000:8000 -v "$PWD"/volumes/chroma/data:/chroma/chroma -e IS_PERSISTENT=TRUE -e ANONYMIZED_TELEMETRY=TRUE -e ALLOW_RESET=TRUE chromadb/chroma:latest
+docker run -d --name chromadb -p 8000:8000 -v "$PWD"/volumes/chroma/data:/chroma/chroma -e IS_PERSISTENT=TRUE -e ANONYMIZED_TELEMETRY=TRUE -e ALLOW_RESET=TRUE chromadb/chroma:0.5.0
 ````
+Version of chroma docker image and chromadb python package must be the same.
+
 
 ## Install Redis in Docker
 

@@ -133,8 +133,7 @@ class ChromaClient(BaseClient):
         search_param = self.__index_config.search_param()
         if search_param != self.__search_param:
             self.__search_param = search_param
-            self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
-                                                                                   metadata=self.__index_config.search_param())
+            self.__collection.modify(metadata=self.__search_param)
 
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
