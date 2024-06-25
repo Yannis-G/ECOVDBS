@@ -1,6 +1,9 @@
 # Datasets
 data/**
 
+# Results
+results/**
+
 # Docker Volumes
 volumes/**
 # Milvus Dockerfile
