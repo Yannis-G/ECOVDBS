@@ -127,7 +127,8 @@ class ChromaClient(BaseClient):
 
     def __pre_query(self) -> None:
         """
-        Update collections metadata.
+        Checks if the current search parameters match the index configuration. If not, updates the search parameters
+        and retrieves or creates a collection with the updated metadata.
         """
         search_param = self.__index_config.search_param()
         if search_param != self.__search_param:

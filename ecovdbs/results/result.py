@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 from ..runner.result_config import HNSWRunnerResult
 
 
-# Recall/ QPS
-# Recall/ Latency
-
-
 def plot_insert_time(results: list[HNSWRunnerResult]):
+    """
+    Plot insertion time for each runner in the results.
+
+    :param results: List of HNSWRunnerResult objects.
+    """
     times = [result.insert_result.t_insert_index for result in results]
     labels = [type(res.client).__name__ for res in results]
 
@@ -21,6 +22,11 @@ def plot_insert_time(results: list[HNSWRunnerResult]):
 
 
 def plot_qps_recall(results: list[HNSWRunnerResult]):
+    """
+    Plot Queries Per Second (QPS) against Average Recall for each mode.
+
+    :param results: List of HNSWRunnerResult objects.
+    """
     # Extract all unique modes from the results
     modes = {mode_result.mode for result in results for mode_result in result.query_result.mode_results}
 
@@ -48,6 +54,11 @@ def plot_qps_recall(results: list[HNSWRunnerResult]):
 
 
 def plot_query_time_recall(results: list[HNSWRunnerResult]):
+    """
+    Plot Average Query Time against Average Recall for each mode.
+
+    :param results: List of HNSWRunnerResult objects.
+    """
     # Extract all unique modes from the results
     modes = {mode_result.mode for result in results for mode_result in result.query_result.mode_results}
 
@@ -75,6 +86,11 @@ def plot_query_time_recall(results: list[HNSWRunnerResult]):
 
 
 def plot_index_size(results: list[HNSWRunnerResult]):
+    """
+    Plot index size for each runner in the results.
+
+    :param results: List of HNSWRunnerResult objects.
+    """
     index_sizes = [result.index_size for result in results]
     labels = [type(res.client).__name__ for res in results]
 
@@ -88,6 +104,11 @@ def plot_index_size(results: list[HNSWRunnerResult]):
 
 
 def plot_disk_size(results: list[HNSWRunnerResult]):
+    """
+    Plot disk size for each runner in the results.
+
+    :param results: List of HNSWRunnerResult objects.
+    """
     disk_sizes = [result.disk_size for result in results]
     labels = [type(res.client).__name__ for res in results]
 

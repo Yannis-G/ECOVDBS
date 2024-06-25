@@ -150,6 +150,10 @@ class PgvectorClient(BaseClient):
         return None
 
     def __pre_query(self) -> None:
+        """
+        Checks if the current search parameters match the index configuration. If not, updates the search parameters
+        and sets the corresponding parameter.
+        """
         search_param = self.__index_config.search_param()
         if search_param != self.__search_param:
             self.__search_param = search_param

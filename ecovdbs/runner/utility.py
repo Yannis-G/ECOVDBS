@@ -37,6 +37,12 @@ def time_it(func) -> Callable[..., tuple[Any, float]]:
 
 
 def dataclass_to_dict(obj: Any) -> Any:
+    """
+    Convert a dataclass object (and its nested attributes) into a dictionary.
+
+    :param obj: The object to convert. Can be a dataclass instance, list, tuple, dict, or other object.
+    :return: Equivalent dictionary representation of the object.
+    """
     if is_dataclass(obj):
         result = {}
         for field in fields(obj):
@@ -59,5 +65,11 @@ def dataclass_to_dict(obj: Any) -> Any:
 
 
 def save_hnsw_runner_result(path: str, result: HNSWRunnerResult) -> None:
+    """
+    Save an HNSWRunnerResult object to a JSON file.
+
+    :param path: Path to save the JSON file.
+    :param result: HNSWRunnerResult object to save.
+    """
     with open(path, 'w') as file:
         json.dump(dataclass_to_dict(result), file, indent=4)

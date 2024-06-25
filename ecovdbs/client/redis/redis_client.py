@@ -87,6 +87,14 @@ class RedisClient(BaseClient):
         return round(float(self.__client.ft(self.__index_name).info()["vector_index_sz_mb"]), 2)
 
     def __pre_query(self) -> str:
+        """
+        Prepares a string representation of the EF_RUNTIME parameter for the query.
+
+        If the search parameter (`param`) exists in the index configuration, it returns a formatted string with the
+        EF_RUNTIME value. Otherwise, it returns an empty string.
+
+        :return: Formatted string with EF_RUNTIME parameter or an empty string.
+        """
         param = self.__index_config.search_param()
         return f"$EF_RUNTIME: {param['EF_RUNTIME']}; " if param else ""
 
