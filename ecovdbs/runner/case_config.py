@@ -81,4 +81,4 @@ class TestCase(HNSWCase):
                       [str(i) for i in range(10_000)], [str(i) for i in range(10_000)])
     hnsw_config = HNSWConfig()
     index_time = IndexTime.PRE_INDEX
-    query_modes = [QueryMode.QUERY]
+    query_modes = [QueryMode.QUERY, QueryMode.FILTERED_QUERY]
