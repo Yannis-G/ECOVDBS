@@ -10,7 +10,7 @@ from docker.errors import NotFound, APIError
 from .chroma_config import ChromaConfig, ChromaHNSWConfig
 from ..base_client import BaseClient
 from ..base_config import BaseIndexConfig
-from ..utility import bytes_to_mb
+from ..utility import bytes_to_mb, get_size_of
 
 log = logging.getLogger(__name__)
 
@@ -103,29 +103,7 @@ class ChromaClient(BaseClient):
 
         :return: Disk storage used in MB. If the value is negativ the docker container during __init__ was not found.
         """
-        return bytes_to_mb(self.__get_size_of(self.__persistence_directory))
-
-    def __get_size_of(self, path: str) -> int:
-        """
-        Get the size of a directory or file within the Docker container.
-
-        :param path: Path to the directory or file within the container.
-        :return: Size in bytes. If the container is not available, return -1.
-        """
-        # Return -1 if the Docker container is not available
-        if not self.__container:
-            log.error("The database container was not found.")
-            return -1
-        # Execute the 'du' command within the Docker container to get the size of the specified path
-        result = self.__container.exec_run(f"du -sb {path}")
-        # Check if the command executed successfully
-        if result.exit_code == 0:
-            output = result.output.decode("utf-8").strip()
-            size_in_bytes = int(output.split()[0])
-            return size_in_bytes
-        else:
-            log.error(f"The database container returned an error: {result.exit_code}")
-            return -1
+        return bytes_to_mb(get_size_of(self.__persistence_directory, self.__container, log))
 
     def index_storage(self):
         """
@@ -137,8 +115,8 @@ class ChromaClient(BaseClient):
 
         :return: Index storage used in MB. If the value is negativ the docker container during __init__ was not found.
         """
-        total_size = self.__get_size_of(self.__persistence_directory)
-        sqlite_size = self.__get_size_of(f"{self.__persistence_directory}/chroma.sqlite3")
+        total_size = get_size_of(self.__persistence_directory, self.__container, log)
+        sqlite_size = get_size_of(f"{self.__persistence_directory}/chroma.sqlite3", self.__container, log)
         return bytes_to_mb(total_size - sqlite_size)
 
     def __pre_query(self) -> None:

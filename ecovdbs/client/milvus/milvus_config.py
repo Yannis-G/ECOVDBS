@@ -10,8 +10,10 @@ class MilvusConfig(BaseConfig):
 
     Attributes:
         connection_uri: The connection URI for the Milvus server. Defaults to "http://localhost:19530".
+        container_name: The name of the database container server. Defaults to "milvus-standalone".
     """
     connection_uri: str = "http://localhost:19530"
+    container_name = "milvus-standalone"
 
 
 class MilvusAutoIndexConfig(BaseIndexConfig):

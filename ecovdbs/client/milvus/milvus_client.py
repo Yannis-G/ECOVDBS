@@ -1,11 +1,15 @@
 import logging
 from typing import Optional
 
+import docker
+from docker.errors import NotFound, APIError
+from docker.models.containers import Container
 from pymilvus import DataType, connections, FieldSchema, CollectionSchema, Collection, utility, SearchResult
 
 from .milvus_config import MilvusConfig
 from ..base_client import BaseClient
 from ..base_config import BaseIndexConfig
+from ..utility import bytes_to_mb, get_size_of
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +34,11 @@ class MilvusClient(BaseClient):
         self.__id_name: str = "id"
         self.__metadata_name: str = "metadata"
         self.__vector_name: str = "vector"
+        self.__persistence_directory: str = "/var/lib/milvus"
+        self.__object_storage_directory: str = f"{self.__persistence_directory}/data"
+        self.__meta_storage_directory: str = f"{self.__persistence_directory}/etcd/member/wal"
+        self.__log_broker_directory: str = f"{self.__persistence_directory}/rdb_data"
+        self.__log_broker_meta_directory: str = f"{self.__persistence_directory}/rdb_data_meta_kv"
 
         # Connect to the Milvus server
         connections.connect(uri=db_config.connection_uri)
@@ -45,6 +54,17 @@ class MilvusClient(BaseClient):
             FieldSchema(name=self.__vector_name, dtype=DataType.FLOAT_VECTOR, dim=self.__dimension),
         ]
         schema: CollectionSchema = CollectionSchema(fields)
+
+        try:
+            client = docker.from_env()
+            self.__container: Container = client.containers.get(db_config.container_name)
+            # Delete all files in the persistence directory
+            self.__container.exec_run(f"sh -c 'rm -R -- {self.__object_storage_directory}/*'")
+            self.__container.exec_run(f"sh -c 'rm -R -- {self.__meta_storage_directory}/*'")
+            self.__container.exec_run(f"sh -c 'rm -R -- {self.__log_broker_directory}/*'")
+            self.__container.exec_run(f"sh -c 'rm -R -- {self.__log_broker_meta_directory}/*'")
+        except NotFound | APIError:
+            log.error(f"Could not find the database container with the name {db_config.container_name}")
 
         # Create the collection with the defined schema
         self.__collection: Collection = Collection(self.__collection_name, schema)
@@ -76,21 +96,28 @@ class MilvusClient(BaseClient):
 
     def disk_storage(self):
         """
-        Not implemented.
+        Get the disk storage used by the database. Disk storage contains the meta storage, object storage and log
+        broker. For a detailed description of the storage see https://milvus.io/docs/four_layers.md
+
+        :return: Disk storage used in MB.
         """
-        # TODO implement
-        pass
+        return bytes_to_mb(get_size_of(self.__persistence_directory, self.__container, log))
 
     def index_storage(self):
         """
-        Not implemented.
+        Get the theoretical storage used by the index in the database.
+
+        :return: Theoretical index storage used in MB.
         """
-        # TODO implement
-        pass
+        # https://github.com/milvus-io/milvus/discussions/24894
+        nd = self.__collection.num_entities
+        m = self.__index_config.index_param()["params"]["M"]
+        return bytes_to_mb(nd * self.__dimension * 4 + nd * m * 8)  # 4 bytes per float32, 8 bytes per int64
 
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
         search_param: dict = self.__index_config.search_param()
+        # TODO verzerrt ergebnisse, da laden der Daten beim ersten mal sehr lange dauert
         self.__collection.load()
         res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name, param=search_param,
                                                      limit=k)
