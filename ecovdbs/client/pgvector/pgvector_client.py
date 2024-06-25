@@ -31,6 +31,7 @@ class PgvectorClient(BaseClient):
         """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
+        self.__search_param = self.__index_config.search_param()
         self.__table_name = "ecovdbs"
         self.__index_name = "idx:ecovdbs"
         self.__id_name = "id"
@@ -142,16 +143,27 @@ class PgvectorClient(BaseClient):
         res = self.__conn.execute(database_size_query)
         return bytes_to_mb(res.fetchall()[0][0])
 
+    def load(self) -> None:
+        """
+        Not implemented! No need in Pgvector.
+        """
+        return None
+
+    def __pre_query(self) -> None:
+        search_param = self.__index_config.search_param()
+        if search_param != self.__search_param:
+            self.__search_param = search_param
+            self.__set_param(search_param["set"])
+
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
-        search_param = self.__index_config.search_param()
-        self.__set_param(search_param["set"])
+        self.__pre_query()
         select = sql.Composed([
             sql.SQL(
                 "SELECT {id_name} FROM {table_name} ORDER BY {vector_name} ").format(
                 id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
                 vector_name=sql.Identifier(self.__vector_name)),
-            sql.SQL(search_param["metric_operator"]),
+            sql.SQL(self.__search_param["metric_operator"]),
             sql.SQL(" %s::vector LIMIT %s::int")
         ])
         res = self.__conn.execute(select, (query, k))
@@ -159,15 +171,14 @@ class PgvectorClient(BaseClient):
 
     def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
         log.info(f"Query {k} vectors with keyword_filter {keyword_filter}. Query: {query}")
-        search_param = self.__index_config.search_param()
-        self.__set_param(search_param["set"])
+        self.__pre_query()
         select = sql.Composed([
             sql.SQL(
                 "SELECT {id_name} FROM {table_name} WHERE {metadata_name} = {keyword_filter} ORDER BY {vector_name} ").format(
                 id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
                 metadata_name=sql.Identifier(self.__metadata_name), keyword_filter=sql.Literal(keyword_filter),
                 vector_name=sql.Identifier(self.__vector_name)),
-            sql.SQL(search_param["metric_operator"]),
+            sql.SQL(self.__search_param["metric_operator"]),
             sql.SQL(" %s::vector LIMIT %s::int")
         ])
         # print(self.__conn.execute(sql.SQL("explain analyze ") + select, (query, k)).fetchall()) Post filtern:
@@ -178,8 +189,7 @@ class PgvectorClient(BaseClient):
 
     def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
         log.info(f"Query {k} vectors with distance {distance}. Query: {query}")
-        search_param = self.__index_config.search_param()
-        self.__set_param(search_param["set"])
+        self.__pre_query()
         select = sql.Composed([
             sql.SQL(
                 # TODO umrechnen distanz für andere Metriken außer L2 IP((embedding <#> '[3,1,2]') * -1), Csine (1 -
@@ -187,10 +197,10 @@ class PgvectorClient(BaseClient):
                 "SELECT {id_name} FROM {table_name} WHERE {vector_name} ").format(
                 id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),
                 vector_name=sql.Identifier(self.__vector_name)),
-            sql.SQL(search_param["metric_operator"]),
+            sql.SQL(self.__search_param["metric_operator"]),
             sql.SQL(" %s::vector < %s::int ORDER BY {vector_name} ").format(
                 vector_name=sql.Identifier(self.__vector_name)),
-            sql.SQL(search_param["metric_operator"]),
+            sql.SQL(self.__search_param["metric_operator"]),
             sql.SQL(" %s::vector LIMIT %s::int")
         ])
         res = self.__conn.execute(select, (query, distance, query, k))

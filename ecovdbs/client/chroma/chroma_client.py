@@ -119,6 +119,12 @@ class ChromaClient(BaseClient):
         sqlite_size = get_size_of(f"{self.__persistence_directory}/chroma.sqlite3", self.__container, log)
         return bytes_to_mb(total_size - sqlite_size)
 
+    def load(self) -> None:
+        """
+        Not implemented! No need in Chroma DB.
+        """
+        return None
+
     def __pre_query(self) -> None:
         """
         Update collections metadata.
@@ -129,7 +135,6 @@ class ChromaClient(BaseClient):
             self.__collection: Collection = self.__client.get_or_create_collection(name=self.__collection_name,
                                                                                    metadata=self.__index_config.search_param())
 
-    #
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
         self.__pre_query()

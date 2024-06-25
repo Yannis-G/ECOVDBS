@@ -69,6 +69,12 @@ class BaseClient(ABC):
         :return: Index storage used in MB.
         """
         raise NotImplementedError
+    @abstractmethod
+    def load(self) -> None:
+        """
+        Load data in memory or any other form of preprocessing for the query.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def query(self, query: list[float], k: int) -> list[int]:

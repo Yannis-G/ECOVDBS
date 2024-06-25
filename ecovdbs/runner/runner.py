@@ -133,6 +133,7 @@ class HNSWQueryRunner:
         :return: Results of the query operation (see :class:`HNSWQueryRunnerResult`).
         """
         log.info("Start QueryRunner for client %s", type(self.__client).__name__)
+        self.__client.load()
         mode_results: list[HNSWQueryModeResult] = []
         for query_mode in self.__query_mode:
             mode_results.append(self.__run_mode(query_mode))

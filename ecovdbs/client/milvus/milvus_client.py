@@ -111,11 +111,15 @@ class MilvusClient(BaseClient):
         m = self.__index_config.index_param()["params"]["M"]
         return bytes_to_mb(nd * self.__dimension * 4 + nd * m * 8)  # 4 bytes per float32, 8 bytes per int64
 
+    def load(self) -> None:
+        """
+        Load the collection into memory. This is necessary to perform queries on the collection.
+        """
+        self.__collection.load()
+
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
         search_param: dict = self.__index_config.search_param()
-        # TODO verzerrt ergebnisse, da laden der Daten beim ersten mal sehr lange dauert
-        self.__collection.load()
         res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name, param=search_param,
                                                      limit=k)
         return [result.id for result in res[0]]
@@ -123,7 +127,6 @@ class MilvusClient(BaseClient):
     def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
         log.info(f"Query {k} vectors with keyword_filter {keyword_filter}. Query: {query}")
         search_param: dict = self.__index_config.search_param()
-        self.__collection.load()
         expr = f'{self.__metadata_name} == "{keyword_filter}"'
         res: SearchResult = self.__collection.search(data=[query], anns_field=self.__vector_name,
                                                      param=search_param, limit=k, expr=expr)

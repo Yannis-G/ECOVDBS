@@ -90,6 +90,12 @@ class RedisClient(BaseClient):
         param = self.__index_config.search_param()
         return f"$EF_RUNTIME: {param['EF_RUNTIME']}; " if param else ""
 
+    def load(self) -> None:
+        """
+        Not implemented. No need in Redis.
+        """
+        return None
+
     def query(self, query: list[float], k: int) -> list[int]:
         log.info(f"Query {k} vectors. Query: {query}")
         redis_query = Query(
