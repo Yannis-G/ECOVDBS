@@ -5,7 +5,7 @@
 Milvus provides an installation script to install it as a docker container. The script is available in the [Milvus repository](https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh). To install Milvus in Docker, just run
 
 ````bash
-bash standalone_embed.sh start
+docker commpose up -d
 ````
 
 ## Install Chroma in Docker
