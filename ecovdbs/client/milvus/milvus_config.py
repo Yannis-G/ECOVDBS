@@ -10,10 +10,11 @@ class MilvusConfig(BaseConfig):
 
     Attributes:
         connection_uri: The connection URI for the Milvus server. Defaults to "http://localhost:19530".
-        container_name: The name of the database container server. Defaults to "milvus-minio".
+        container_name: The name of the database container server. Defaults to "milvus-standalone". Use "milvus-minio"
+            for docker-compose.
     """
     connection_uri: str = "http://localhost:19530"
-    container_name = "milvus-minio"
+    container_name = "milvus-standalone"
 
 
 class MilvusAutoIndexConfig(BaseIndexConfig):

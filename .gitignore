@@ -4,6 +4,9 @@ data/**
 # Results
 results/**
 
+# Plots
+plots/**
+
 # Docker Volumes
 volumes/**
 # Milvus Dockerfile

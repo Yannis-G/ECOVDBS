@@ -133,7 +133,6 @@ class HNSWQueryRunner:
         :return: Results of the query operation (see :class:`HNSWQueryRunnerResult`).
         """
         log.info("Start QueryRunner for client %s", type(self.__client).__name__)
-        self.__client.load()
         mode_results: list[HNSWQueryModeResult] = []
         for query_mode in self.__query_mode:
             mode_results.append(self.__run_mode(query_mode))
@@ -151,6 +150,7 @@ class HNSWQueryRunner:
         ef_results: list[HNSWQueryEFResult] = []
         for ef in self.__ef_search:
             self.__index_config.change_ef_search(ef)
+            self.__client.load()
             self.total_time = 0
             self.total_recall = 0
 

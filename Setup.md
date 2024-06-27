@@ -2,8 +2,11 @@
 
 ## Install Milvus in Docker
 
-Milvus provides an installation script to install it as a docker container. The script is available in the [Milvus repository](https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh). To install Milvus in Docker, just run
-
+milvus-standalone
+````bash
+bash milvus.sh start
+````
+milvus docker-compose
 ````bash
 docker commpose up -d
 ````

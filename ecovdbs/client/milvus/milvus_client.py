@@ -34,11 +34,11 @@ class MilvusClient(BaseClient):
         self.__id_name: str = "id"
         self.__metadata_name: str = "metadata"
         self.__vector_name: str = "vector"
-        self.__persistence_directory: str = "/minio_data/a-bucket/files"
-        self.__object_storage_directory: str = f"{self.__persistence_directory}/data"
-        self.__meta_storage_directory: str = f"{self.__persistence_directory}/etcd/member/wal"
-        self.__log_broker_directory: str = f"{self.__persistence_directory}/rdb_data"
-        self.__log_broker_meta_directory: str = f"{self.__persistence_directory}/rdb_data_meta_kv"
+        if db_config.container_name == "milvus-minio":
+            self.__persistence_directory: str = "/minio_data/a-bucket/files"
+        else:
+            self.__persistence_directory: str = "/var/lib/milvus"
+            self.__object_storage_directory: str = f"{self.__persistence_directory}/data"
 
         # Connect to the Milvus server
         connections.connect(uri=db_config.connection_uri)
@@ -59,7 +59,7 @@ class MilvusClient(BaseClient):
             client = docker.from_env()
             self.__container: Container = client.containers.get(db_config.container_name)
             # Delete all files in the persistence directory
-            self.__container.exec_run(f"sh -c 'rm -R -- {self.__persistence_directory}/*'")
+            # self.__container.exec_run(f"sh -c 'rm -R -- {self.__persistence_directory}/*'")
         except NotFound | APIError:
             log.error(f"Could not find the database container with the name {db_config.container_name}")
 
@@ -93,8 +93,8 @@ class MilvusClient(BaseClient):
 
     def disk_storage(self):
         """
-        Get the disk storage used by the database. Disk storage object storage in MinIO. For a detailed description
-        of the storage see https://milvus.io/docs/four_layers.md
+        Get the disk storage used by the database. For a detailed description of the storage see
+        https://milvus.io/docs/four_layers.md
 
         :return: Disk storage used in MB.
         """
