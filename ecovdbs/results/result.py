@@ -1,13 +1,19 @@
+import os
+from datetime import datetime
+
 import matplotlib.pyplot as plt
 
 from ..runner.result_config import HNSWRunnerResult
 
 
-def plot_insert_time(results: list[HNSWRunnerResult]):
+def plot_insert_time(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
+                     save: bool = True):
     """
     Plot insertion time for each runner in the results.
 
     :param results: List of HNSWRunnerResult objects.
+    :param time: The time of the test.
+    :param save: Save the plot to a file.
     """
     times = [result.insert_result.t_insert_index for result in results]
     labels = [type(res.client).__name__ for res in results]
@@ -19,13 +25,18 @@ def plot_insert_time(results: list[HNSWRunnerResult]):
     for time, label in zip(times, labels):
         ax.annotate(f'{time:.2f}', (label, time))
     plt.show()
+    if save:
+        plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-IndexInsertionTime.png"))
 
 
-def plot_qps_recall(results: list[HNSWRunnerResult]):
+def plot_qps_recall(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
+                    save: bool = True):
     """
     Plot Queries Per Second (QPS) against Average Recall for each mode.
 
     :param results: List of HNSWRunnerResult objects.
+    :param time: The time of the test.
+    :param save: Save the plot to a file.
     """
     # Extract all unique modes from the results
     modes = {mode_result.mode for result in results for mode_result in result.query_result.mode_results}
@@ -51,13 +62,18 @@ def plot_qps_recall(results: list[HNSWRunnerResult]):
         ax.set_title(f'Queries Per Second/Recall for Mode: {mode.name}')
         ax.legend()
         plt.show()
+        if save:
+            plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-QPS-R-{mode.name}.png"))
 
 
-def plot_query_time_recall(results: list[HNSWRunnerResult]):
+def plot_query_time_recall(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
+                           save: bool = True):
     """
     Plot Average Query Time against Average Recall for each mode.
 
     :param results: List of HNSWRunnerResult objects.
+    :param time: The time of the test.
+    :param save: Save the plot to a file.
     """
     # Extract all unique modes from the results
     modes = {mode_result.mode for result in results for mode_result in result.query_result.mode_results}
@@ -83,13 +99,18 @@ def plot_query_time_recall(results: list[HNSWRunnerResult]):
         ax.set_title(f'Average Query Time (seconds)/Recall for Mode: {mode.name}')
         ax.legend()
         plt.show()
+        if save:
+            plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-AvgQT-R-{mode.name}.png"))
 
 
-def plot_index_size(results: list[HNSWRunnerResult]):
+def plot_index_size(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
+                    save: bool = True):
     """
     Plot index size for each runner in the results.
 
     :param results: List of HNSWRunnerResult objects.
+    :param time: The time of the test.
+    :param save: Save the plot to a file.
     """
     index_sizes = [result.index_size for result in results]
     labels = [type(res.client).__name__ for res in results]
@@ -101,13 +122,18 @@ def plot_index_size(results: list[HNSWRunnerResult]):
     for index_size, label in zip(index_sizes, labels):
         ax.annotate(f'{index_size:.2f}', (label, index_size))
     plt.show()
+    if save:
+        plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-IndexSize.png"))
 
 
-def plot_disk_size(results: list[HNSWRunnerResult]):
+def plot_disk_size(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
+                   save: bool = True):
     """
     Plot disk size for each runner in the results.
 
     :param results: List of HNSWRunnerResult objects.
+    :param time: The time of the test.
+    :param save: Save the plot to a file.
     """
     disk_sizes = [result.disk_size for result in results]
     labels = [type(res.client).__name__ for res in results]
@@ -119,3 +145,5 @@ def plot_disk_size(results: list[HNSWRunnerResult]):
     for disk_size, label in zip(disk_sizes, labels):
         ax.annotate(f'{disk_size:.2f}', (label, disk_size))
     plt.show()
+    if save:
+        plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-DiskSize.png"))
