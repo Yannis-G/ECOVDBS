@@ -4,6 +4,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 from ..runner.result_config import HNSWRunnerResult
+from ..config import PLOT_BASE_PATH
 
 
 def plot_insert_time(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
@@ -26,7 +27,7 @@ def plot_insert_time(results: list[HNSWRunnerResult], time: str = datetime.now()
         ax.annotate(f'{time:.2f}', (label, time))
     plt.show()
     if save:
-        plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-IndexInsertionTime.png"))
+        plt.savefig(os.path.join(PLOT_BASE_PATH, f"{time}-IndexInsertionTime.png"))
 
 
 def plot_qps_recall(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
@@ -63,7 +64,7 @@ def plot_qps_recall(results: list[HNSWRunnerResult], time: str = datetime.now().
         ax.legend()
         plt.show()
         if save:
-            plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-QPS-R-{mode.name}.png"))
+            plt.savefig(os.path.join(PLOT_BASE_PATH, f"{time}-QPS-R-{mode.name}.png"))
 
 
 def plot_query_time_recall(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
@@ -100,7 +101,7 @@ def plot_query_time_recall(results: list[HNSWRunnerResult], time: str = datetime
         ax.legend()
         plt.show()
         if save:
-            plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-AvgQT-R-{mode.name}.png"))
+            plt.savefig(os.path.join(PLOT_BASE_PATH, f"{time}-AvgQT-R-{mode.name}.png"))
 
 
 def plot_index_size(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
@@ -123,7 +124,7 @@ def plot_index_size(results: list[HNSWRunnerResult], time: str = datetime.now().
         ax.annotate(f'{index_size:.2f}', (label, index_size))
     plt.show()
     if save:
-        plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-IndexSize.png"))
+        plt.savefig(os.path.join(PLOT_BASE_PATH, f"{time}-IndexSize.png"))
 
 
 def plot_disk_size(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
@@ -146,4 +147,4 @@ def plot_disk_size(results: list[HNSWRunnerResult], time: str = datetime.now().s
         ax.annotate(f'{disk_size:.2f}', (label, disk_size))
     plt.show()
     if save:
-        plt.savefig(os.path.join(os.getenv("PYTHONPATH").split(";")[0], f"plots/{time}-DiskSize.png"))
+        plt.savefig(os.path.join(PLOT_BASE_PATH, f"{time}-DiskSize.png"))
