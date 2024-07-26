@@ -15,8 +15,10 @@ def download(src_url: str, dest_path: str) -> None:
         urlretrieve(src_url, dest_path)
 
 
-# The following IO/eval functions are from faiss
-# https://github.com/facebookresearch/faiss/blob/master/benchs/datasets.py
+# The following method is copied from Faiss.
+# Original Author: Lucas Hosseini
+# Source: https://github.com/facebookresearch/faiss/blob/master/benchs/datasets.py
+# Modifications: Moved ivecs_read in a separate method and added a tolist() call to the return value.
 
 def _ivecs_read(fname):
     a = np.fromfile(fname, dtype='int32')

@@ -227,7 +227,7 @@ class MilvusHNSWConfig(BaseHNSWConfig):
         """
         Initialize MilvusHNSWConfig.
 
-        :param M: M defines tha maximum number of outgoing connections in the graph. Higher M leads to higher
+        :param M: M defines the maximum number of outgoing connections in the graph. Higher M leads to higher
             accuracy/run_time at fixed ef/efConstruction.
         :param efConstruction: ef_construction controls index search speed/build speed tradeoff. Increasing the
             efConstruction parameter may enhance index quality, but it also tends to lengthen the indexing time.

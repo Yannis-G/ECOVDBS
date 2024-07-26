@@ -11,7 +11,7 @@ class ChromaConfig(BaseConfig):
 
     Attributes:
         host: The hostname for the database server. Defaults to "localhost".
-        port: The port number for the database server. Defaults to 8000.
+        port: The port number for the database server. Default to 8000.
         container_name: The name of the database container server. Defaults to "chromadb".
     """
     host: str = "localhost"
@@ -32,19 +32,19 @@ class ChromaHNSWConfig(BaseHNSWConfig):
         Initialize the ChromaIndexConfig for the Chroma HNSW index with default values.
 
         :param metric_type: Controls the distance metric of the HNSW index. Default: L2
-        :param construction_ef: Controls the number of neighbours in the HNSW graph to explore when adding new vectors.
-            The more neighbours HNSW explores the better and more exhaustive the results will be. Increasing the value
+        :param construction_ef: Controls the number of neighbors in the HNSW graph to explore when adding new vectors.
+            The more neighbors HNSW explores, the better and more exhaustive the results will be. Increasing the value
             will also increase memory consumption. Default: 100
-        :param M: Controls the maximum number of neighbour connections (M), a newly inserted vector. A higher value
+        :param M: Controls the maximum number of neighbor connections (M), a newly inserted vector. A higher value
             results in a mode densely connected graph. The impact on this is slower but more accurate searches with
             increased memory consumption. Default: 16
-        :param search_ef: Controls the number of neighbours in the HNSW graph to explore when searching. Increasing this
+        :param search_ef: Controls the number of neighbors in the HNSW graph to explore when searching. Increasing this
             requires more memory for the HNSW algo to explore the nodes during knn search. Default: 10
         :param num_threads: Controls how many threads HNSW algo use. Default: <number of CPU cores>
-        :param resize_factor: Controls the rate of growth of the graph (e.g. how many node capacity will be added)
+        :param resize_factor: Controls the growth rate of the graph (e.g., how much node capacity will be added)
             whenever the current graph capacity is reached. Default: 1.2
-        :param batch_size: Controls the size of the Bruteforce (in-memory) index. Once this threshold is crossed vectors
-            from BF gets transferred to HNSW index. Default: 100
+        :param batch_size: Controls the size of the Bruteforce (in-memory) index. Once this threshold is crossed,
+            vectors from BF get transferred to HNSW index. Default: 100
         :param sync_threshold: Controls the threshold when using HNSW index is written to disk. Default: 1000
         """
         self.__space: Optional[MetricType] = metric_type

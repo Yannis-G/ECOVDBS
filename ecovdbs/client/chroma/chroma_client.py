@@ -101,7 +101,7 @@ class ChromaClient(BaseClient):
         (https://cookbook.chromadb.dev/core/storage-layout/) This method returns the size of the howl persistence
         directory.
 
-        :return: Disk storage used in MB. If the value is negativ the docker container during __init__ was not found.
+        :return: Disk storage used in MB. If the value is negativ, the docker container during __init__ was not found.
         """
         return bytes_to_mb(get_size_of(self.__persistence_directory, self.__container, log))
 
@@ -113,7 +113,7 @@ class ChromaClient(BaseClient):
         (https://cookbook.chromadb.dev/core/storage-layout/) This method returns the size of thd folder for the HNSW
         index.
 
-        :return: Index storage used in MB. If the value is negativ the docker container during __init__ was not found.
+        :return: Index storage used in MB. If the value is negativ, the docker container during __init__ was not found.
         """
         total_size = get_size_of(self.__persistence_directory, self.__container, log)
         sqlite_size = get_size_of(f"{self.__persistence_directory}/chroma.sqlite3", self.__container, log)
@@ -121,7 +121,7 @@ class ChromaClient(BaseClient):
 
     def load(self) -> None:
         """
-        Not implemented! No need in Chroma DB.
+        Not implemented! No need for Chroma DB.
         """
         return None
 

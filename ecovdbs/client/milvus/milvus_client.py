@@ -106,6 +106,7 @@ class MilvusClient(BaseClient):
 
         :return: Theoretical index storage used in MB.
         """
+        # Description of the theoretical index storage calculation:
         # https://github.com/milvus-io/milvus/discussions/24894
         nd = self.__collection.num_entities
         m = self.__index_config.index_param()["params"]["M"]

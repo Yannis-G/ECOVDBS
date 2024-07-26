@@ -11,7 +11,7 @@ class PgvectorConfig(BaseConfig):
 
     Attributes:
         host: The hostname for the database server. Defaults to "localhost".
-        port: The port number for the database server. Defaults to 5432.
+        port: The port number for the database server. Default to 5432.
         dbname: The database name. Defaults to "postgres".
         user: The username for the database. Defaults to "postgres".
         password: The password for the database. Defaults to "pwd".
@@ -42,7 +42,7 @@ class PgvectorHNSWConfig(BaseHNSWConfig):
             ef_construction provides better recall at the cost of index build time / insert speed.
         :param ef_search: Specify the size of the dynamic candidate list for search. A higher value provides better
             recall at the cost of speed. This value must be equal or higher than ``k`` in query
-        :param maintenance_work_mem: The memory to use for maintenance work. Indexes build significantly faster when
+        :param maintenance_work_mem:  Memory to use for maintenance work. Indexes build significantly faster when
             the graph fits into maintenance_work_mem
         :param max_parallel_maintenance_workers: The maximum number of parallel maintenance workers.
         """
@@ -56,7 +56,7 @@ class PgvectorHNSWConfig(BaseHNSWConfig):
 
     def index_param(self) -> dict:
         """
-        Generate the index parameters dictionary. The directory contain the keys ``index_type`` and ``metric_type``
+        Generate the index parameters dictionary. The directory contains the keys ``index_type`` and ``metric_type``
         for the corresponding type. The keys ``with`` and ``set`` contain an empty directory but may contain further
         keys. ``with`` may contain the keys ``m`` and ``ef_construction`` if the value is different from the default
         value of the database. ``set`` may contain the keys ``maintenance_work_mem``
@@ -82,7 +82,7 @@ class PgvectorHNSWConfig(BaseHNSWConfig):
 
     def search_param(self) -> dict:
         """
-        Generate the search parameters dictionary. The directory contain the keys ``metric_operator`` for the operator
+        Generate the search parameters dictionary. The directory contains the keys ``metric_operator`` for the operator
         and ``set`` as an empty dictionary. ``set`` may contain the key ``hnsw.ef_search`` if the value is different
         from the default.
 
@@ -131,9 +131,9 @@ class PgvectorIVFFlatConfig(BaseIndexConfig):
 
     def index_param(self) -> dict:
         """
-        Generate the index parameters dictionary. The directory contain the keys ``index_type`` and ``metric_type``
+        Generate the index parameters dictionary. The directory contains the keys ``index_type`` and ``metric_type``
         for the corresponding type. The key ``with`` contains a directory with the key ``lists``. The key ``set``
-        contain an empty directory but may contain the key ``max_parallel_maintenance_workers`` if the value is
+         contains an empty directory but may contain the key ``max_parallel_maintenance_workers`` if the value is
         different from the default value of the database.
 
         :return: A dictionary of index parameters.
@@ -152,7 +152,7 @@ class PgvectorIVFFlatConfig(BaseIndexConfig):
 
     def search_param(self) -> dict:
         """
-        Generate the search parameters dictionary. The directory contain the keys ``metric_operator`` for the operator
+        Generate the search parameters dictionary. The directory contains the keys ``metric_operator`` for the operator
         and ``set`` as an empty dictionary. ``set`` may contain the key ``ivfflat.probes`` if the value is different
         from the default.
 

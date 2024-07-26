@@ -12,7 +12,7 @@ class RedisConfig(BaseConfig):
     Attributes:
         host: The hostname for the database server. Defaults to "localhost".
         port: The port number for the database server. Defaults to 6379.
-        password: The password for the Redis server. Defaults to an empty string.
+        password: The password for the Redis server. Default to an empty string.
     """
     host: str = 'localhost'
     port: int = 6379
@@ -30,9 +30,10 @@ class RedisFlatConfig(BaseIndexConfig):
         Initialize the RedisFlatConfig with the specified parameters.
 
         :param metric_type: The metric type for distance calculation.
-        :param data_type: The data type for the vectors. Must be either "FLOAT32" or "FLOAT64". Defaults to "FLOAT32".
+        :param data_type: The data type for the vectors. It must be either "FLOAT32" or "FLOAT64". Defaults to
+            "FLOAT32".
         :param initial_cap: Initial vector capacity in the index affecting memory allocation size of the index.
-        :param block_size: Block size to hold BLOCK_SIZE amount of vectors in a contiguous array. This is useful when
+        :param block_size: Block size to hold BLOCK_SIZE number of vectors in a contiguous array. This is useful when
             the index is dynamic with respect to addition and deletion.
         """
         assert data_type in ["FLOAT32", "FLOAT64"]
@@ -44,8 +45,8 @@ class RedisFlatConfig(BaseIndexConfig):
 
     def index_param(self) -> dict:
         """
-        Generate the index parameters dictionary. The directory contain the keys ``index`` for the index and ``param``
-        for a  directory with params for the index. ``param`` contains the keys``TYPE`` and ``DISTANCE_METRIC`` and may
+        Generate the index parameters dictionary. The directory contains the keys ``index`` for the index and ``param``
+        for a directory with params for the index. ``param`` contains the keys ``TYPE`` and ``DISTANCE_METRIC`` and may
         contain the keys ``INITIAL_CAP`` and ``BLOCK_SIZE`` if the value is different from the default value of the
         database.
 
@@ -85,17 +86,18 @@ class RedisHNSWConfig(BaseHNSWConfig):
         Initialize the RedisHNSWConfig with the specified parameters.
 
         :param metric_type: The metric type for distance calculation.
-        :param data_type: The data type for the vectors. Must be either "FLOAT32" or "FLOAT64". Defaults to "FLOAT32".
+        :param data_type: The data type for the vectors. It must be either "FLOAT32" or "FLOAT64". Defaults to
+            "FLOAT32".
         :param initial_cap: Initial vector capacity in the index affecting memory allocation size of the index.
-        :param M: Number of maximum allowed outgoing edges for each node in the graph in each layer. on layer zero the
-            maximal number of outgoing edges will be 2M..
-        :param ef_construction: Number of maximum allowed potential outgoing edges candidates for each node in the
-            graph, during the graph building.
+        :param M: Number of maximum allowed outgoing edges for each node in the graph in each layer. On layer zero, the
+            maximal number of outgoing edges will be 2M.
+        :param ef_construction: Number of maximums allowed potential outgoing edges candidates for each node in the
+            graph during the graph building.
         :param ef_runtime: Number of maximum top candidates to hold during the KNN search. Higher values of EF_RUNTIME
             lead to more accurate results at the expense of a longer runtime.
         :param epsilon: Relative factor that sets the boundaries in which a range query may search for candidates. That
             is, vector candidates whose distance from the query vector is radius*(1 + EPSILON) are potentially scanned,
-            allowing more extensive search and more accurate results (on the expense of runtime).
+            allowing more extensive search and more accurate results (at the expense of runtime).
         """
         assert data_type in ["FLOAT32", "FLOAT64"]
         self.__type = data_type
@@ -109,8 +111,8 @@ class RedisHNSWConfig(BaseHNSWConfig):
 
     def index_param(self) -> dict:
         """
-        Generate the index parameters dictionary. The directory contain the keys ``index`` for the index and ``param``
-        for a  directory with params for the index. ``param`` contains the keys``TYPE`` and ``DISTANCE_METRIC`` and may
+        Generate the index parameters dictionary. The directory contains the keys ``index`` for the index and ``param``
+        for a directory with params for the index. ``param`` contains the keys ``TYPE`` and ``DISTANCE_METRIC`` and may
         contain the keys ``INITIAL_CAP``, ``M``, ``EF_CONSTRUCTION``, ``EF_RUNTIME``, ``EPSILON`` if the value is
         different from the default value of the database.
 

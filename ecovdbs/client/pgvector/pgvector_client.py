@@ -131,6 +131,7 @@ class PgvectorClient(BaseClient):
 
         :return: Disk storage used in MB.
         """
+        # Explanation of the storage layout and functions for PostgreSQL:
         # https://stackoverflow.com/questions/41991380/whats-the-difference-between-pg-table-size-pg-relation-size-pg-total-relatio/70397779#70397779
         database_size_query = sql.SQL("SELECT pg_total_relation_size({table_name})").format(
             table_name=sql.Literal(self.__table_name))
@@ -196,7 +197,7 @@ class PgvectorClient(BaseClient):
         self.__pre_query()
         select = sql.Composed([
             sql.SQL(
-                # TODO umrechnen distanz für andere Metriken außer L2 IP((embedding <#> '[3,1,2]') * -1), Csine (1 -
+                # TODO umrechnen distanz für andere Metriken außer L2 IP((embedding <#> '[3,1,2]') * -1), Cosine (1 -
                 #  (embedding <=> '[3,1,2]'))
                 "SELECT {id_name} FROM {table_name} WHERE {vector_name} ").format(
                 id_name=sql.Identifier(self.__id_name), table_name=sql.Identifier(self.__table_name),

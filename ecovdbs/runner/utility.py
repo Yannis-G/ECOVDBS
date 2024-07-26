@@ -40,7 +40,7 @@ def dataclass_to_dict(obj: Any) -> Any:
     """
     Convert a dataclass object (and its nested attributes) into a dictionary.
 
-    :param obj: The object to convert. Can be a dataclass instance, list, tuple, dict, or other object.
+    :param obj: The object to convert. It can be a dataclass instance, list, tuple, dict, or another object.
     :return: Equivalent dictionary representation of the object.
     """
     if is_dataclass(obj):

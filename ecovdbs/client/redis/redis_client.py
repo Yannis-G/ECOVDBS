@@ -100,7 +100,7 @@ class RedisClient(BaseClient):
 
     def load(self) -> None:
         """
-        Not implemented. No need in Redis.
+        Not implemented. No need for Redis.
         """
         return None
 
