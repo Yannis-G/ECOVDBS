@@ -18,11 +18,15 @@ def download(src_url: str, dest_path: str) -> None:
 # The following IO/eval functions are from faiss
 # https://github.com/facebookresearch/faiss/blob/master/benchs/datasets.py
 
-def ivecs_read(fname):
+def _ivecs_read(fname):
     a = np.fromfile(fname, dtype='int32')
     d = a[0]
     return a.reshape(-1, d + 1)[:, 1:].copy()
 
 
+def ivecs_read(fname):
+    return _ivecs_read(fname).tolist()
+
+
 def fvecs_read(fname):
-    return ivecs_read(fname).view('float32')
+    return _ivecs_read(fname).view('float32').tolist()
