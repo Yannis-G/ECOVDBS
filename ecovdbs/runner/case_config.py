@@ -1,10 +1,8 @@
-import os
 from dataclasses import dataclass, field
 from enum import Enum
 
-from ..client.base_config import MetricType
 from ..dataset.dataset import Dataset
-from ..dataset.utility import fvecs_read, ivecs_read
+from ..dataset.dataset_reader import read_sift_small
 
 
 class IndexTime(Enum):
@@ -74,11 +72,7 @@ class TestCase(HNSWCase):
     """
     Test case class for running HNSW tasks with a specific dataset and configuration.
     """
-    dataset = Dataset(128, MetricType.L2, fvecs_read(
-        os.path.join(os.getenv("PYTHONPATH").split(";")[0], "data/siftsmall/siftsmall_base.fvecs")), fvecs_read(
-        os.path.join(os.getenv("PYTHONPATH").split(";")[0], "data/siftsmall/siftsmall_query.fvecs")), ivecs_read(
-        os.path.join(os.getenv("PYTHONPATH").split(";")[0], "data/siftsmall/siftsmall_groundtruth.ivecs")),
-                      [str(i) for i in range(10_000)], [str(i) for i in range(10_000)])
+    dataset = read_sift_small()
     hnsw_config = HNSWConfig()
     index_time = IndexTime.PRE_INDEX
     query_modes = [QueryMode.QUERY]
