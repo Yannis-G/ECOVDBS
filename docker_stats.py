@@ -4,9 +4,6 @@ import time
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Initialize Docker client
-client = docker.from_env()
-
 
 def get_memory_usage(container):
     stats = container.stats(stream=False)
@@ -28,6 +25,7 @@ def get_cpu_usage(container):
 class ContainerMonitor(threading.Thread):
     def __init__(self, container_id, interval=.5):
         super().__init__()
+        self.client = docker.from_env()
         self.container_id = container_id
         self.interval = interval
         self.running = True
@@ -36,7 +34,7 @@ class ContainerMonitor(threading.Thread):
         self.timestamps = []
 
     def run(self):
-        container = client.containers.get(self.container_id)
+        container = self.client.containers.get(self.container_id)
         print(f"Starting monitoring for container {self.container_id}.")
         while self.running:
             self.timestamps.append(datetime.now())
