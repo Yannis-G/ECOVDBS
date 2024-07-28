@@ -47,7 +47,7 @@ H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME = "hnm"
 H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL = "https://storage.googleapis.com/ann-filtered-benchmark/datasets/hnm.tgz"
 
 RANDOM_100_ANGULAR_KEYWORD_NAME = "random_keywords_1m"
-RANDOM_100_ANGULAR_INT_NAME = "random_ints_1m_test"
+RANDOM_100_ANGULAR_INT_NAME = "random_ints_1m"
 RANDOM_2048_ANGULAR_KEYWORD_NAME = "random_keywords_100k"
 RANDOM_2048_ANGULAR_INT_NAME = "random_ints_100k"
 
@@ -205,10 +205,11 @@ def download_h_and_m_clothes_2048_angular() -> None:
     """
     Download and process the H&M clothes dataset.
     """
-    _download_tar_file(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL,
-                       H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
-    modify_filters_and_payload(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
-    generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+    if not os.path.exists(os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)):
+        _download_tar_file(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL,
+                           H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+        modify_filters_and_payload(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+        generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
 
 
 def read_h_and_m_clothes_2048_angular() -> Dataset:
@@ -222,7 +223,8 @@ def download_random_100_angular_keyword() -> None:
     """
     Generate random 100-dimensional keyword datasets.
     """
-    generate_random_100_keyword_datasets(name=RANDOM_100_ANGULAR_KEYWORD_NAME)
+    if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_100_ANGULAR_KEYWORD_NAME)):
+        generate_random_100_keyword_datasets(name=RANDOM_100_ANGULAR_KEYWORD_NAME)
 
 
 def read_random_100_angular_keyword() -> Dataset:
@@ -236,7 +238,8 @@ def download_random_100_angular_int() -> None:
     """
     Generate random 100-dimensional integer datasets.
     """
-    generate_random_100_int_datasets(name=RANDOM_100_ANGULAR_INT_NAME)
+    if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_100_ANGULAR_INT_NAME)):
+        generate_random_100_int_datasets(name=RANDOM_100_ANGULAR_INT_NAME)
 
 
 def read_random_100_angular_int() -> Dataset:
@@ -250,7 +253,8 @@ def download_random_2048_angular_keyword() -> None:
     """
     Generate random 2048-dimensional keyword datasets.
     """
-    generate_random_2048_keyword_datasets(name=RANDOM_2048_ANGULAR_KEYWORD_NAME)
+    if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_2048_ANGULAR_KEYWORD_NAME)):
+        generate_random_2048_keyword_datasets(name=RANDOM_2048_ANGULAR_KEYWORD_NAME)
 
 
 def read_random_2048_angular_keyword() -> Dataset:
@@ -264,7 +268,8 @@ def download_random_2048_angular_int() -> None:
     """
     Generate random 2048-dimensional integer datasets.
     """
-    generate_random_2048_int_datasets(name=RANDOM_2048_ANGULAR_INT_NAME)
+    if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_2048_ANGULAR_INT_NAME)):
+        generate_random_2048_int_datasets(name=RANDOM_2048_ANGULAR_INT_NAME)
 
 
 def read_random_2048_angular_int() -> Dataset:

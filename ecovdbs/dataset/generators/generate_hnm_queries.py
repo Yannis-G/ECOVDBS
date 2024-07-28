@@ -138,7 +138,8 @@ def modify_filters_and_payload(name: str = "hnm") -> None:
         for line in fd:
             data = json.loads(line)
             product_type_name = data.get('product_type_name', '')
-            payloads.append(product_type_name + '\n')
+            payloads.append({'product_type_name': product_type_name})
 
     with open(payloads_path, 'w') as fd:
-        fd.writelines(payloads)
+        for entry in payloads:
+            fd.write(json.dumps(entry) + '\n')
