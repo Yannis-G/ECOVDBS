@@ -1,7 +1,8 @@
 # This file was copied from the ANN Filtered Retrieval Datasets repository.
 # Original Author: Qdrant
 # Source: https://github.com/qdrant/ann-filtering-benchmark-datasets/blob/master/generators/generate.py
-# Modifications: Removed unused methods, changed check_condition functions to one match and add top variable
+# Modifications: Removed unused methods, changed check_condition functions to one match, add top variable
+#                and docstrings.
 import json
 import os
 import random
@@ -14,38 +15,87 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 class DataGenerator:
+    """
+    A class to generate random data for ANN filtering benchmark datasets.
+    """
 
-    def __init__(self, vocab_size=1000):
+    def __init__(self, vocab_size: int = 1000) -> None:
+        """
+        Initialize the DataGenerator with a vocabulary of random keywords.
+
+        :param vocab_size: Number of random keywords to generate for the vocabulary.
+        """
         self.vocab = [self.random_keyword() for _ in range(vocab_size)]
 
     @staticmethod
-    def random_keyword():
+    def random_keyword() -> str:
+        """
+        Generate a random keyword consisting of five letters.
+
+        :return: A random keyword.
+        """
         letters = string.ascii_letters
         return "".join(random.sample(letters, 5))
 
-    def sample_keyword(self):
+    def sample_keyword(self) -> str:
+        """
+        Sample a random keyword from the vocabulary.
+
+        :return: A random keyword from the vocabulary.
+        """
         return random.choice(self.vocab)
 
     @staticmethod
-    def random_int(rng=100):
+    def random_int(rng=100) -> int:
+        """
+        Generate a random integer within a range.
+
+        :param rng: The upper limit of the random integer range.
+        :return: A random integer.
+        """
         return random.randint(0, rng)
 
-    def random_match_keyword(self):
+    def random_match_keyword(self) -> dict:
+        """
+        Generate a random match keyword condition.
+
+        :return: A dictionary with a random keyword condition.
+        """
         return {
             "value": self.sample_keyword()
         }
 
-    def random_match_int(self, rng=100):
+    def random_match_int(self, rng=100) -> dict:
+        """
+        Generate a random match integer condition.
+
+        :param rng: The upper limit of the random integer range.
+        :return: A dictionary with a random integer condition.
+        """
         return {
             "value": self.random_int(rng)
         }
 
     @staticmethod
-    def random_vectors(size, dim):
+    def random_vectors(size, dim) -> np.ndarray:
+        """
+        Generate a matrix of random vectors.
+
+        :param size: Number of vectors.
+        :param dim: Dimension of each vector.
+        :return: A numpy array of random vectors.
+        """
         return np.random.rand(size, dim).astype(np.float32)
 
     @staticmethod
-    def check_condition(value, condition):
+    def check_condition(value, condition) -> bool:
+        """
+        Check if a value matches a given condition.
+
+        :param value: The value to check.
+        :param condition: The condition to match.
+        :return: True if the value matches the condition, False otherwise.
+        """
         return value == condition['value']
 
     def search(
@@ -54,7 +104,17 @@ class DataGenerator:
             payloads: List[dict],
             query: np.ndarray,
             conditions: dict = None,
-            top=25):
+            top: int = 25) -> tuple:
+        """
+        Search for the top matching vectors based on the query and conditions.
+
+        :param vectors: Matrix of vectors to search.
+        :param payloads: List of payloads associated with the vectors.
+        :param query: Query vector.
+        :param conditions: Conditions to filter the vectors.
+        :param top: Number of top results to return.
+        :return: Tuple of lists containing the closest vector IDs and their scores.
+        """
         field = list(conditions.keys())[0]
         mask = np.array(
             [self.check_condition(value=payload[field], condition=conditions[field]) for payload in payloads])
@@ -79,14 +139,26 @@ class DataGenerator:
 
 def generate_samples(
         generator: DataGenerator,
-        num_queries,
-        dim,
-        vectors,
-        payloads,
-        path,
+        num_queries: int,
+        dim: int,
+        vectors: np.ndarray,
+        payloads: List[dict],
+        path: str,
         condition_generator,
-        top=25,
-):
+        top: int = 25,
+) -> None:
+    """
+    Generate query samples and save them to a file.
+
+    :param generator: DataGenerator instance to use for generating samples.
+    :param num_queries: Number of query samples to generate.
+    :param dim: Dimension of each query vector.
+    :param vectors: Matrix of vectors to search.
+    :param payloads: List of payloads associated with the vectors.
+    :param path: File path to save the generated samples.
+    :param condition_generator: Function to generate query conditions.
+    :param top: Number of top results to return for each query.
+    """
     with open(path, "w") as out:
         for _ in tqdm.tqdm(range(num_queries)):
             query = generator.random_vectors(1, dim=dim)[0]
@@ -115,15 +187,27 @@ def generate_samples(
 
 
 def generate_random_dataset(
-        generator,
-        size,
-        dim,
-        path,
-        num_queries,
+        generator: DataGenerator,
+        size: int,
+        dim: int,
+        path: str,
+        num_queries: int,
         payload_gen,
         condition_gen,
-        top=25
-):
+        top: int = 25
+) -> None:
+    """
+    Generate a random dataset and save it to files.
+
+    :param generator: DataGenerator instance to use for generating the dataset.
+    :param size: Number of vectors in the dataset.
+    :param dim: Dimension of each vector.
+    :param path: Directory path to save the generated dataset.
+    :param num_queries: Number of query samples to generate.
+    :param payload_gen: Function to generate payloads.
+    :param condition_gen: Function to generate query conditions.
+    :param top: Number of top results to return for each query.
+    """
     os.makedirs(path, exist_ok=True)
     vectors = generator.random_vectors(size, dim)
 
