@@ -1,10 +1,15 @@
+import json
 import os
-import time
 from typing import Callable
 
 import h5py
-from .utility import download, ivecs_read, fvecs_read
+import numpy as np
+
 from .dataset import Dataset
+from .generators.generate_hnm_queries import modify_filters_and_payload, generate_hnm_queries_from_file
+from .generators.generate_random_datasets import generate_random_100_keyword_datasets, \
+    generate_random_2048_keyword_datasets, generate_random_100_int_datasets, generate_random_2048_int_datasets
+from .utility import download, ivecs_read, fvecs_read
 from ..client.base_config import MetricType
 from ..config import DATA_BASE_PATH
 
@@ -38,18 +43,11 @@ ARXIV_TITLES_384_ANGULAR_KEYWORD_DOWNLOAD_URL = "https://storage.googleapis.com/
 H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE = "hnm.tgz"
 H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME = "hnm"
 H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL = "https://storage.googleapis.com/ann-filtered-benchmark/datasets/hnm.tgz"
-RANDOM_100_ANGULAR_KEYWORD_FILE = "random_keywords_1m.tgz"
+
 RANDOM_100_ANGULAR_KEYWORD_NAME = "random_keywords_1m"
-RANDOM_100_ANGULAR_KEYWORD_DOWNLOAD_URL = "https://storage.googleapis.com/ann-filtered-benchmark/datasets/random_keywords_1m.tgz"
-RANDOM_100_ANGULAR_INT_FILE = "random_ints_1m.tgz"
-RANDOM_100_ANGULAR_INT_NAME = "random_ints_1m"
-RANDOM_100_ANGULAR_INT_DOWNLOAD_URL = "https://storage.googleapis.com/ann-filtered-benchmark/datasets/random_ints_1m.tgz"
-RANDOM_2048_ANGULAR_KEYWORD_FILE = "random_keywords_100k.tgz"
+RANDOM_100_ANGULAR_INT_NAME = "random_ints_1m_test"
 RANDOM_2048_ANGULAR_KEYWORD_NAME = "random_keywords_100k"
-RANDOM_2048_ANGULAR_KEYWORD_DOWNLOAD_URL = "https://storage.googleapis.com/ann-filtered-benchmark/datasets/random_keywords_100k.tgz"
-RANDOM_2048_ANGULAR_INT_FILE = "random_ints_100k.tgz"
 RANDOM_2048_ANGULAR_INT_NAME = "random_ints_100k"
-RANDOM_2048_ANGULAR_INT_DOWNLOAD_URL = "https://storage.googleapis.com/ann-filtered-benchmark/datasets/random_ints_100k.tgz"
 
 
 def download_sift_small() -> None:
@@ -136,6 +134,7 @@ def read_deep_image() -> Dataset:
 def download_arxiv_titles_384_angular() -> None:
     _download_tar_file(ARXIV_TITLES_384_ANGULAR_KEYWORD_FILE, ARXIV_TITLES_384_ANGULAR_KEYWORD_DOWNLOAD_URL,
                        ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME)
+    # TODO Change Filter Dataset to only one payload per vector
 
 
 # TODO read_arxiv_titles_384_angular
@@ -143,36 +142,45 @@ def download_arxiv_titles_384_angular() -> None:
 def download_h_and_m_clothes_2048_angular() -> None:
     _download_tar_file(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL,
                        H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+    modify_filters_and_payload(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+    generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
 
 
-# TODO read_h_and_m_clothes_2048_angular
+def read_h_and_m_clothes_2048_angular() -> Dataset:
+    return _read_filtered_dataset_qdrant(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME, 2048, MetricType.COSINE)
+
 
 def download_random_100_angular_keyword() -> None:
-    _download_tar_file(RANDOM_100_ANGULAR_KEYWORD_FILE, RANDOM_100_ANGULAR_KEYWORD_DOWNLOAD_URL,
-                       RANDOM_100_ANGULAR_KEYWORD_NAME)
+    generate_random_100_keyword_datasets(name=RANDOM_100_ANGULAR_KEYWORD_NAME)
 
 
-# TODO read_random_100_angular_keyword
+def read_random_100_angular_keyword() -> Dataset:
+    return _read_filtered_dataset_qdrant(RANDOM_100_ANGULAR_KEYWORD_NAME, 100, MetricType.COSINE)
+
 
 def download_random_100_angular_int() -> None:
-    _download_tar_file(RANDOM_100_ANGULAR_INT_FILE, RANDOM_100_ANGULAR_INT_DOWNLOAD_URL, RANDOM_100_ANGULAR_INT_NAME)
+    generate_random_100_int_datasets(name=RANDOM_100_ANGULAR_INT_NAME)
 
 
-# TODO read_random_100_angular_int
+def read_random_100_angular_int() -> Dataset:
+    return _read_filtered_dataset_qdrant(RANDOM_100_ANGULAR_INT_NAME, 100, MetricType.COSINE)
+
 
 def download_random_2048_angular_keyword() -> None:
-    _download_tar_file(RANDOM_2048_ANGULAR_KEYWORD_FILE, RANDOM_2048_ANGULAR_KEYWORD_DOWNLOAD_URL,
-                       RANDOM_2048_ANGULAR_KEYWORD_NAME)
+    generate_random_2048_keyword_datasets(name=RANDOM_2048_ANGULAR_KEYWORD_NAME)
 
 
-# TODO read_random_2048_angular
+def read_random_2048_angular_keyword() -> Dataset:
+    return _read_filtered_dataset_qdrant(RANDOM_2048_ANGULAR_KEYWORD_NAME, 2048, MetricType.COSINE)
 
 
 def download_random_2048_angular_int() -> None:
-    _download_tar_file(RANDOM_2048_ANGULAR_INT_FILE, RANDOM_2048_ANGULAR_INT_DOWNLOAD_URL, RANDOM_2048_ANGULAR_INT_NAME)
+    generate_random_2048_int_datasets(name=RANDOM_2048_ANGULAR_INT_NAME)
 
 
-# TODO read_random_2048_angular_int
+def read_random_2048_angular_int() -> Dataset:
+    return _read_filtered_dataset_qdrant(RANDOM_2048_ANGULAR_INT_NAME, 2048, MetricType.COSINE)
+
 
 def _download_tar_file(file_name: str, url: str, name: str, create_dir: bool = True):
     if not os.path.exists(os.path.join(DATA_BASE_PATH, name)):
@@ -209,3 +217,31 @@ def _read_hdf5_file_ann_benchmark(download_func: Callable[[], None], file_name: 
                        f["train"][()].tolist(),
                        f["test"][()].tolist(),
                        f["neighbors"][()].tolist())
+
+
+def _read_filtered_dataset_qdrant(name: str, dimension: int, metric_type: MetricType) -> Dataset:
+    vectors_path = os.path.join(DATA_BASE_PATH, name, "vectors.npy")
+    vectors = np.load(vectors_path, allow_pickle=False).tolist()
+
+    payloads_path = os.path.join(DATA_BASE_PATH, name, "payloads.jsonl")
+    payloads = []
+    with open(payloads_path) as fd:
+        for line in fd:
+            data = json.loads(line)
+            payloads.append(list(data.values())[0])
+
+    test_path = os.path.join(DATA_BASE_PATH, name, "tests.jsonl")
+    print(test_path)
+    queries = []
+    closest_ids = []
+    filters = []
+    with open(test_path) as fd:
+        for line in fd:
+            data = json.loads(line)
+            queries.append(data['query'])
+            closest_ids.append(data['closest_ids'])
+            conditions = data['conditions']
+            field = list(conditions.keys())[0]
+            filters.append(conditions[field]['value'])
+
+    return Dataset(dimension, metric_type, vectors, queries, closest_ids, payloads, filters)
