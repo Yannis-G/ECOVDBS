@@ -50,7 +50,7 @@ class HNSWConfig:
     ef_search: list[int] = field(default_factory=lambda: [120, 200, 400, 800])
 
 
-@dataclass(init=False)
+@dataclass
 class HNSWCase:
     """
     Case class for running HNSW tasks, including the dataset and configuration.

@@ -5,9 +5,20 @@ from enum import Enum
 from functools import wraps
 from typing import Any, Callable
 
+from .chroma.chroma_task import ChromaHNSWTask
+from .milvus.milvus_task import MilvusHNSWTask
+from .redis.redis_task import RedisHNSWTask
+from .pgvector.pgvector_task import PgvectorHNSWTask
 from .result_config import HNSWRunnerResult
 from ..client.base_client import BaseClient
 from ..client.base_config import BaseHNSWConfig
+
+client_mapper = {
+    "CHROMA": ChromaHNSWTask,
+    "MILVUS": MilvusHNSWTask,
+    "REDIS": RedisHNSWTask,
+    "PGVECTOR": PgvectorHNSWTask
+}
 
 
 def time_it(func) -> Callable[..., tuple[Any, float]]:

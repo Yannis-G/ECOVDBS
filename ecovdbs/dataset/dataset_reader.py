@@ -378,3 +378,23 @@ def _read_filtered_dataset_qdrant(name: str, dimension: int, metric_type: Metric
             filters.append(conditions[field]['value'])
 
     return Dataset(dimension, metric_type, vectors, queries, closest_ids, payloads, filters)
+
+
+dataset_mapper = {
+    "SIFT_SMALL": read_sift_small,
+    "SIFT": read_sift,
+    "GIST": read_gist,
+    "GLOVE_25": read_glove_25,
+    "GLOVE_50": read_glove_50,
+    "GLOVE_100": read_glove_100,
+    "GLOVE_200": read_glove_200,
+    "MNIST": read_mnist,
+    "FASHION_MNIST": read_fashion_mnist,
+    "DEEP_IMAGE": read_deep_image,
+    "ARXIV_TITLES": read_arxiv_titles_384_angular,
+    "H_AND_M_CLOTHES": read_h_and_m_clothes_2048_angular,
+    "RANDOM_100_KEYWORD": read_random_100_angular_keyword,
+    "RANDOM_100_INT": read_random_100_angular_int,
+    "RANDOM_2048_KEYWORD": read_random_2048_angular_keyword,
+    "RANDOM_2048_INT": read_random_2048_angular_int
+}
