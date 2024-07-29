@@ -6,7 +6,8 @@ import h5py
 import numpy as np
 
 from .dataset import Dataset
-from .generators.generate_hnm_queries import modify_filters_and_payload, generate_hnm_queries_from_file
+from .generators.generate_arxiv_queries import modify_tests_and_payload_arxiv
+from .generators.generate_hnm_queries import generate_hnm_queries_from_file, modify_filters_and_payload_hnm
 from .generators.generate_random_datasets import (generate_random_100_keyword_datasets,
                                                   generate_random_2048_keyword_datasets,
                                                   generate_random_100_int_datasets, generate_random_2048_int_datasets)
@@ -194,12 +195,21 @@ def read_deep_image() -> Dataset:
 
 
 def download_arxiv_titles_384_angular() -> None:
-    _download_tar_file(ARXIV_TITLES_384_ANGULAR_KEYWORD_FILE, ARXIV_TITLES_384_ANGULAR_KEYWORD_DOWNLOAD_URL,
-                       ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME)
-    # TODO Change Filter Dataset to only one payload per vector
+    """
+    Download the ArXiv titels dataset.
+    """
+    if not os.path.exists(os.path.join(DATA_BASE_PATH, ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME)):
+        _download_tar_file(ARXIV_TITLES_384_ANGULAR_KEYWORD_FILE, ARXIV_TITLES_384_ANGULAR_KEYWORD_DOWNLOAD_URL,
+                           ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME)
+        modify_tests_and_payload_arxiv(ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME)
 
 
-# TODO read_arxiv_titles_384_angular
+def read_arxiv_titles_384_angular() -> Dataset:
+    """
+    Read the ArXiv titels dataset.
+    """
+    return _read_filtered_dataset_qdrant(ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME, 384, MetricType.COSINE)
+
 
 def download_h_and_m_clothes_2048_angular() -> None:
     """
@@ -208,7 +218,7 @@ def download_h_and_m_clothes_2048_angular() -> None:
     if not os.path.exists(os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)):
         _download_tar_file(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL,
                            H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
-        modify_filters_and_payload(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+        modify_filters_and_payload_hnm(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
         generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
 
 

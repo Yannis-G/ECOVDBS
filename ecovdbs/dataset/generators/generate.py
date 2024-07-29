@@ -2,7 +2,7 @@
 # Original Author: Qdrant
 # Source: https://github.com/qdrant/ann-filtering-benchmark-datasets/blob/master/generators/generate.py
 # Modifications: Removed unused methods, changed check_condition functions to one match, add top variable
-#                and docstrings.
+#                and docstrings and add modify_payload function.
 import json
 import os
 import random
@@ -12,6 +12,8 @@ from typing import List
 import numpy as np
 import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
+
+from ...config import DATA_BASE_PATH
 
 
 class DataGenerator:
@@ -230,3 +232,24 @@ def generate_random_dataset(
         condition_generator=condition_gen,
         top=top
     )
+
+
+def modify_payload(name: str, item_name: str) -> None:
+    """
+    This function reads the payloads from a JSON lines file, keeps only the specified item name
+    in each payload, and writes the modified payloads back to the file.
+
+    :param name: The name of the dataset.
+    :param item_name: The key to be retained in each payload.
+    """
+    payloads_path = os.path.join(DATA_BASE_PATH, name, "payloads.jsonl")
+    payloads = []
+    with open(payloads_path) as fd:
+        for line in fd:
+            data = json.loads(line)
+            product_type_name = data.get(item_name, '')
+            payloads.append({item_name: product_type_name})
+
+    with open(payloads_path, 'w') as fd:
+        for entry in payloads:
+            fd.write(json.dumps(entry) + '\n')

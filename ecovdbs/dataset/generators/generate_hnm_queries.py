@@ -13,7 +13,9 @@ import numpy as np
 from tqdm import tqdm
 
 from ...config import DATA_BASE_PATH
-from .generate import DataGenerator
+from .generate import DataGenerator, modify_payload
+
+ITEM_NAME = 'product_type_name'
 
 
 def generate_query(filters: Dict[str, list]) -> Dict[str, Dict[str, str]]:
@@ -121,7 +123,7 @@ def generate_hnm_queries_from_file(name: str = "hnm", num_queries: int = 10_000,
     )
 
 
-def modify_filters_and_payload(name: str = "hnm") -> None:
+def modify_filters_and_payload_hnm(name: str = "hnm") -> None:
     """
     Modify filters and payloads for the dataset to only include 'product_type_name'.
 
@@ -129,17 +131,7 @@ def modify_filters_and_payload(name: str = "hnm") -> None:
     """
     filters_path = os.path.join(DATA_BASE_PATH, name, "filters.json")
     filters = json.load(open(filters_path))
-    filters = [item for item in filters if item['name'] == 'product_type_name']
+    filters = [item for item in filters if item['name'] == ITEM_NAME]
     json.dump(filters, open(filters_path, 'w'))
 
-    payloads_path = os.path.join(DATA_BASE_PATH, name, "payloads.jsonl")
-    payloads = []
-    with open(payloads_path) as fd:
-        for line in fd:
-            data = json.loads(line)
-            product_type_name = data.get('product_type_name', '')
-            payloads.append({'product_type_name': product_type_name})
-
-    with open(payloads_path, 'w') as fd:
-        for entry in payloads:
-            fd.write(json.dumps(entry) + '\n')
+    modify_payload(name, ITEM_NAME)
