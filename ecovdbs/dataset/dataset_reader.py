@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from typing import Callable
 
@@ -51,6 +52,8 @@ RANDOM_100_ANGULAR_KEYWORD_NAME = "random_keywords_1m"
 RANDOM_100_ANGULAR_INT_NAME = "random_ints_1m"
 RANDOM_2048_ANGULAR_KEYWORD_NAME = "random_keywords_100k"
 RANDOM_2048_ANGULAR_INT_NAME = "random_ints_100k"
+
+log = logging.getLogger(__name__)
 
 
 def download_sift_small() -> None:
@@ -218,6 +221,8 @@ def download_h_and_m_clothes_2048_angular() -> None:
     if not os.path.exists(os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)):
         _download_tar_file(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL,
                            H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+        log.info(
+            "Modifying filters and payloads for H&M clothes dataset and generating HNM queries for H&M clothes dataset")
         modify_filters_and_payload_hnm(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
         generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
 
@@ -233,6 +238,7 @@ def download_random_100_angular_keyword() -> None:
     """
     Generate random 100-dimensional keyword datasets.
     """
+    log.info("Generating random 100-dimensional keyword datasets")
     if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_100_ANGULAR_KEYWORD_NAME)):
         generate_random_100_keyword_datasets(name=RANDOM_100_ANGULAR_KEYWORD_NAME)
 
@@ -248,6 +254,7 @@ def download_random_100_angular_int() -> None:
     """
     Generate random 100-dimensional integer datasets.
     """
+    log.info("Generating random 100-dimensional integer datasets")
     if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_100_ANGULAR_INT_NAME)):
         generate_random_100_int_datasets(name=RANDOM_100_ANGULAR_INT_NAME)
 
@@ -263,6 +270,7 @@ def download_random_2048_angular_keyword() -> None:
     """
     Generate random 2048-dimensional keyword datasets.
     """
+    log.info("Generating random 2048-dimensional keyword datasets")
     if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_2048_ANGULAR_KEYWORD_NAME)):
         generate_random_2048_keyword_datasets(name=RANDOM_2048_ANGULAR_KEYWORD_NAME)
 
@@ -278,6 +286,7 @@ def download_random_2048_angular_int() -> None:
     """
     Generate random 2048-dimensional integer datasets.
     """
+    log.info("Generating random 2048-dimensional integer datasets")
     if not os.path.exists(os.path.join(DATA_BASE_PATH, RANDOM_2048_ANGULAR_INT_NAME)):
         generate_random_2048_int_datasets(name=RANDOM_2048_ANGULAR_INT_NAME)
 
@@ -293,6 +302,7 @@ def _download_tar_file(file_name: str, url: str, name: str, create_dir: bool = T
     """
     Download and extract a tar file.
     """
+    log.info(f"Downloading {name} dataset")
     if not os.path.exists(os.path.join(DATA_BASE_PATH, name)):
         download(url, os.path.join(DATA_BASE_PATH, file_name))
         if create_dir:
@@ -321,6 +331,7 @@ def _download_hdf5_file(file_name: str, url: str):
     """
     Download an HDF5 file.
     """
+    log.info(f"Downloading {file_name} dataset")
     if not os.path.exists(os.path.join(DATA_BASE_PATH, file_name)):
         download(url, os.path.join(DATA_BASE_PATH, file_name))
 

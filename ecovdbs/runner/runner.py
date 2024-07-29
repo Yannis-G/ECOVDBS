@@ -1,4 +1,5 @@
 import logging
+import tqdm
 from typing import Optional, Callable
 
 from .result_config import (InsertRunnerResult, HNSWQueryEFResult, HNSWQueryModeResult, HNSWQueryRunnerResult,
@@ -193,7 +194,7 @@ class HNSWQueryRunner:
         """
         Run the standard queries.
         """
-        for q, gt in zip(self.__query_vectors, self.__ground_truth_neighbors):
+        for q, gt in tqdm.tqdm(zip(self.__query_vectors, self.__ground_truth_neighbors)):
             res, t = self.__query(q, self.__k)
             recall = len(set(gt) & set(res)) / self.__k
             self.total_recall += recall
@@ -208,7 +209,7 @@ class HNSWQueryRunner:
         :param query_func: The query function to use.
         :param extended: List of extended parameters (e.g., keywords or distances).
         """
-        for q, gt, e in zip(self.__query_vectors, self.__ground_truth_neighbors, extended):
+        for q, gt, e in tqdm.tqdm(zip(self.__query_vectors, self.__ground_truth_neighbors, extended)):
             res, t = query_func(q, self.__k, e)
             recall = len(set(gt) & set(res)) / self.__k
             self.total_recall += recall
