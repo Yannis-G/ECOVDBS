@@ -1,7 +1,11 @@
 import argparse
+import logging
+from datetime import datetime
 
+from .results.result import plot_query_time_recall
 from .runner.utility import client_mapper
 from .runner.case_config import IndexTime, QueryMode, HNSWCase, HNSWConfig
+from .runner.runner import HNSWRunner
 
 from .dataset.dataset_reader import dataset_mapper
 
@@ -43,7 +47,7 @@ def main():
         help="Print a list of all possible index-time values and exit"
     )
     parser.add_argument(
-        "--query-mode", nargs='+', default=['query'],
+        "--query-mode", type=str, default='query',
         help="Query mode (in lowercase). Default is query. E.g., --query-mode query"
     )
     parser.add_argument(
@@ -85,7 +89,7 @@ def main():
     # Convert query-mode inputs to uppercase to match the Enum keys
     query_mode_key = args.query_mode.upper()
 
-    dataset, index_time_value, query_mode, clients = None, None, None, []
+    dataset, index_time_value, query_mode, client_tasks = None, None, None, []
 
     # Process the dataset
     if dataset_key in dataset_mapper.keys():
@@ -116,7 +120,7 @@ def main():
     # Process clients
     for client_key in client_keys:
         if client_key in client_mapper.keys():
-            clients.append(client_mapper[client_key])
+            client_tasks.append(client_mapper[client_key])
             print(f"Successfully instantiated client: {client_key.lower()}")
         else:
             print(f"Error: {client_key.lower()} is not a valid client name.")
@@ -124,4 +128,13 @@ def main():
 
     case = HNSWCase(dataset, HNSWConfig(), index_time_value, query_mode)
 
-    # TODO: start task for each client with the case
+    now = datetime.now()
+    time = now.strftime("%Y-%m-%d-%H-%M")
+    logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    logging.getLogger("ecovdbs.runner.runner").setLevel(logging.INFO)
+
+    # TODO: better result handling, all plots, aggregate results, save results and plots
+    for task in client_tasks:
+        runner = HNSWRunner(task(case))
+        res = runner.run()
+        plot_query_time_recall([res], time, False)
