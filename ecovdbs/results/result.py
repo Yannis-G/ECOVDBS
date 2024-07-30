@@ -7,6 +7,8 @@ from ..runner.result_config import HNSWRunnerResult
 from ..config import PLOT_BASE_PATH
 
 
+# TODO plot saving instead of showing
+
 def plot_insert_time(results: list[HNSWRunnerResult], time: str = datetime.now().strftime("%Y-%m-%d-%H-%M"),
                      save: bool = True):
     """

@@ -48,6 +48,7 @@ class ContainerMonitor(threading.Thread):
     def stop(self):
         self.running = False
 
+    # TODO plot saving instead of showing
     def summarize_stats(self):
         # Plot memory usage
         plt.figure(figsize=(12, 6))

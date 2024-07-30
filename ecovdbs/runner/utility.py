@@ -1,9 +1,10 @@
 import json
+import os
 import time
 from dataclasses import is_dataclass, fields
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from .chroma.chroma_task import ChromaHNSWTask
 from .milvus.milvus_task import MilvusHNSWTask
@@ -12,6 +13,7 @@ from .pgvector.pgvector_task import PgvectorHNSWTask
 from .result_config import HNSWRunnerResult
 from ..client.base_client import BaseClient
 from ..client.base_config import BaseHNSWConfig
+from ..config import RESULT_BASE_PATH
 
 client_mapper = {
     "CHROMA": ChromaHNSWTask,
@@ -75,12 +77,15 @@ def dataclass_to_dict(obj: Any) -> Any:
     return obj
 
 
-def save_hnsw_runner_result(path: str, result: HNSWRunnerResult) -> None:
+def save_hnsw_runner_result(result: HNSWRunnerResult, path: Optional[str] = None) -> None:
     """
     Save an HNSWRunnerResult object to a JSON file.
 
-    :param path: Path to save the JSON file.
     :param result: HNSWRunnerResult object to save.
+    :param path: Path to save the JSON file.
     """
+    if path is None:
+        path = os.path.join(RESULT_BASE_PATH,
+                            f"{time.strftime('%Y-%m-%d-%H-%M-%S')}-{type(result.client).__name__}-result.json")
     with open(path, 'w') as file:
         json.dump(dataclass_to_dict(result), file, indent=4)

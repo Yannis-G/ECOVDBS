@@ -6,7 +6,7 @@ from argparse import Namespace
 from .docker_stats import container_mapper, ContainerMonitor
 from .results.result import plot_query_time_recall
 from .runner.result_config import HNSWRunnerResult
-from .runner.utility import client_mapper
+from .runner.utility import client_mapper, save_hnsw_runner_result
 from .runner.case_config import IndexTime, QueryMode, HNSWCase, HNSWConfig
 from .runner.runner import HNSWRunner
 from .runner.task_config import HNSWTask
@@ -93,39 +93,33 @@ def main() -> None:
     # Convert query-mode inputs to uppercase to match the Enum keys
     query_mode_key: str = args.query_mode.upper()
 
-    dataset: Dataset = None
-    index_time_value: IndexTime = None
-    query_mode: QueryMode = None
-    client_tasks: list[HNSWTask] = []
-    container: list[ContainerMonitor] = []
-
     # Process the dataset
     if dataset_key in dataset_mapper.keys():
-        dataset = dataset_mapper[dataset_key]()
+        dataset: Dataset = dataset_mapper[dataset_key]()
         print(f"Successfully read dataset: {dataset_key.lower()}")
     else:
         print(f"Error: {dataset_key.lower()} is not a valid dataset name.")
         return
 
     # Process index-time
-    if index_time_key:
-        if index_time_key in IndexTime.__members__:
-            index_time_value = IndexTime[index_time_key]
-            print(f"Index time set to: {index_time_key.lower()}")
-        else:
-            print(f"Error: {index_time_key.lower()} is not a valid index time.")
-            return
+    if index_time_key and index_time_key in IndexTime.__members__:
+        index_time_value: IndexTime = IndexTime[index_time_key]
+        print(f"Index time set to: {index_time_key.lower()}")
+    else:
+        print(f"Error: {index_time_key.lower()} is not a valid index time.")
+        return
 
     # Process query-modes
-    if query_mode_key:
-        if query_mode_key in QueryMode.__members__:
-            query_mode = QueryMode[query_mode_key]
-            print(f"Query mode set to: {query_mode_key.lower()}")
-        else:
-            print(f"Error: {query_mode_key.lower()} is not a valid query mode.")
-            return
+    if query_mode_key and query_mode_key in QueryMode.__members__:
+        query_mode: QueryMode = QueryMode[query_mode_key]
+        print(f"Query mode set to: {query_mode_key.lower()}")
+    else:
+        print(f"Error: {query_mode_key.lower()} is not a valid query mode.")
+        return
 
     # Process clients
+    client_tasks: list[HNSWTask] = []
+    container: list[ContainerMonitor] = []
     for client_key in client_keys:
         if client_key in client_mapper.keys():
             client_tasks.append(client_mapper[client_key])
@@ -147,9 +141,10 @@ def main() -> None:
     results: list[HNSWRunnerResult] = []
     for task, monitor in zip(client_tasks, container):
         monitor.start()
-        runner = HNSWRunner(task(case))
-        res = runner.run()
+        runner: HNSWRunner = HNSWRunner(task(case))
+        res: HNSWRunnerResult = runner.run()
         # TODO plot handling
         monitor.stop()
         results.append(res)
+        save_hnsw_runner_result(res)
     plot_query_time_recall(results, time, False)
