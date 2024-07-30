@@ -68,3 +68,11 @@ class ContainerMonitor(threading.Thread):
         plt.legend()
         plt.grid(True)
         plt.show()
+
+
+container_mapper = {
+    "CHROMA": ContainerMonitor("chromadb"),
+    "MILVUS": ContainerMonitor("milvus-standalone"),
+    "PGVECTOR": ContainerMonitor("pgvector"),
+    "REDIS": ContainerMonitor("redis-stack")
+}

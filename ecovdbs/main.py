@@ -1,26 +1,30 @@
 import argparse
 import logging
 from datetime import datetime
+from argparse import Namespace
 
+from .docker_stats import container_mapper, ContainerMonitor
 from .results.result import plot_query_time_recall
+from .runner.result_config import HNSWRunnerResult
 from .runner.utility import client_mapper
 from .runner.case_config import IndexTime, QueryMode, HNSWCase, HNSWConfig
 from .runner.runner import HNSWRunner
-
+from .runner.task_config import HNSWTask
 from .dataset.dataset_reader import dataset_mapper
+from .dataset.dataset import Dataset
 
 
-def print_enum_keys(enum_class, enum_name):
+def print_enum_keys(enum_class, enum_name: str) -> None:
     keys = [e.name.lower() for e in enum_class]
     print(f"Possible {enum_name} values: {', '.join(keys)}")
 
 
-def print_dict_keys(d, dict_name):
+def print_dict_keys(d: dict, dict_name: str) -> None:
     keys = [key.lower() for key in d.keys()]
     print(f"Possible {dict_name} values: {', '.join(keys)}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Instantiate clients and read datasets by name")
     parser.add_argument(
         "--dataset", type=str,
@@ -55,7 +59,7 @@ def main():
         help="Print a list of all possible query-modes values and exit"
     )
 
-    args = parser.parse_args()
+    args: Namespace = parser.parse_args()
 
     # Handle the --dataset-list argument
     if args.dataset_list:
@@ -78,18 +82,22 @@ def main():
         return
 
     # Convert dataset input to uppercase to match the dictionary keys
-    dataset_key = args.dataset.upper()
+    dataset_key: str = args.dataset.upper()
 
     # Convert client inputs to uppercase to match the dictionary keys
-    client_keys = [name.upper() for name in args.clients]
+    client_keys: list[str] = [name.upper() for name in args.clients]
 
     # Convert index-time input to uppercase to match the Enum keys
-    index_time_key = args.index_time.upper()
+    index_time_key: str = args.index_time.upper()
 
     # Convert query-mode inputs to uppercase to match the Enum keys
-    query_mode_key = args.query_mode.upper()
+    query_mode_key: str = args.query_mode.upper()
 
-    dataset, index_time_value, query_mode, client_tasks = None, None, None, []
+    dataset: Dataset = None
+    index_time_value: IndexTime = None
+    query_mode: QueryMode = None
+    client_tasks: list[HNSWTask] = []
+    container: list[ContainerMonitor] = []
 
     # Process the dataset
     if dataset_key in dataset_mapper.keys():
@@ -122,19 +130,26 @@ def main():
         if client_key in client_mapper.keys():
             client_tasks.append(client_mapper[client_key])
             print(f"Successfully instantiated client: {client_key.lower()}")
+        if client_key in container_mapper.keys():
+            container.append(container_mapper[client_key])
         else:
             print(f"Error: {client_key.lower()} is not a valid client name.")
             return
 
-    case = HNSWCase(dataset, HNSWConfig(), index_time_value, query_mode)
+    case: HNSWCase = HNSWCase(dataset, HNSWConfig(), index_time_value, query_mode)
 
-    now = datetime.now()
-    time = now.strftime("%Y-%m-%d-%H-%M")
+    now: datetime = datetime.now()
+    time: str = now.strftime("%Y-%m-%d-%H-%M")
     logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     logging.getLogger("ecovdbs.runner.runner").setLevel(logging.INFO)
 
     # TODO: better result handling, all plots, aggregate results, save results and plots
-    for task in client_tasks:
+    results: list[HNSWRunnerResult] = []
+    for task, monitor in zip(client_tasks, container):
+        monitor.start()
         runner = HNSWRunner(task(case))
         res = runner.run()
-        plot_query_time_recall([res], time, False)
+        # TODO plot handling
+        monitor.stop()
+        results.append(res)
+    plot_query_time_recall(results, time, False)
