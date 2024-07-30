@@ -43,8 +43,8 @@ def main():
         help="Print a list of all possible index-time values and exit"
     )
     parser.add_argument(
-        "--query-modes", nargs='+', default=['query'],
-        help="List of query modes (in lowercase). Default is query. E.g., --query-modes query filtered_query"
+        "--query-mode", nargs='+', default=['query'],
+        help="Query mode (in lowercase). Default is query. E.g., --query-mode query"
     )
     parser.add_argument(
         "--query-modes-list", action='store_true',
@@ -73,19 +73,19 @@ def main():
         print_enum_keys(QueryMode, "query-modes")
         return
 
-    # Convert dataset input to uppercase to match the Enum keys
+    # Convert dataset input to uppercase to match the dictionary keys
     dataset_key = args.dataset.upper()
 
-    # Convert client inputs to uppercase to match the Enum keys
+    # Convert client inputs to uppercase to match the dictionary keys
     client_keys = [name.upper() for name in args.clients]
 
     # Convert index-time input to uppercase to match the Enum keys
     index_time_key = args.index_time.upper()
 
-    # Convert query-modes inputs to uppercase to match the Enum keys
-    query_mode_keys = [name.upper() for name in args.query_modes]
+    # Convert query-mode inputs to uppercase to match the Enum keys
+    query_mode_key = args.query_mode.upper()
 
-    dataset, index_time_value, query_modes, clients = None, None, [], []
+    dataset, index_time_value, query_mode, clients = None, None, None, []
 
     # Process the dataset
     if dataset_key in dataset_mapper.keys():
@@ -105,9 +105,9 @@ def main():
             return
 
     # Process query-modes
-    for query_mode_key in query_mode_keys:
+    if query_mode_key:
         if query_mode_key in QueryMode.__members__:
-            query_modes.append(QueryMode[query_mode_key])
+            query_mode = QueryMode[query_mode_key]
             print(f"Query mode set to: {query_mode_key.lower()}")
         else:
             print(f"Error: {query_mode_key.lower()} is not a valid query mode.")
@@ -122,6 +122,6 @@ def main():
             print(f"Error: {client_key.lower()} is not a valid client name.")
             return
 
-    case = HNSWCase(dataset, HNSWConfig(), index_time_value, query_modes)
+    case = HNSWCase(dataset, HNSWConfig(), index_time_value, query_mode)
 
     # TODO: start task for each client with the case

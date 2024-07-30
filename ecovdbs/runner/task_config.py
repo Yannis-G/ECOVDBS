@@ -13,10 +13,10 @@ class InsertConfig:
 
     Attributes:
         index_time: The time at which the index is created (see :class:`IndexTime`).
-        query_modes: The query modes (see :class:`QueryMode`).
+        query_mode: The query mode (see :class:`QueryMode`).
     """
     index_time: IndexTime
-    query_modes: list[QueryMode]
+    query_mode: QueryMode
 
 
 @dataclass(frozen=True)
@@ -27,11 +27,11 @@ class HNSWQueryConfig:
     Attributes:
         ef_search: A list of sizes for the dynamic list for the nearest neighbors (used during search).
         index_config: Configuration for the HNSW index (see :class:`BaseHNSWConfig`).
-        query_modes: The query modes (see :class:`QueryMode`).
+        query_mode: The query modes (see :class:`QueryMode`).
     """
     ef_search: list[int]
     index_config: BaseHNSWConfig
-    query_modes: list[QueryMode]
+    query_mode: QueryMode
 
 
 @dataclass(init=False)

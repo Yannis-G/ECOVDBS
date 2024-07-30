@@ -59,7 +59,7 @@ class InsertRunner:
         self.__index_time: IndexTime = config.index_time
         self.__data_vectors: list[list[float]] = dataset.data_vectors
         self.__metadata: Optional[
-            list[str]] = dataset.metadata if QueryMode.FILTERED_QUERY in config.query_modes else None
+            list[str]] = dataset.metadata if QueryMode.FILTERED_QUERY == config.query_mode else None
 
     def run(self):
         """
@@ -117,7 +117,7 @@ class HNSWQueryRunner:
         self.__client: BaseClient = client
         self.__ef_search: list[int] = config.ef_search
         self.__index_config: BaseHNSWConfig = config.index_config
-        self.__query_mode: list[QueryMode] = config.query_modes
+        self.__query_mode: QueryMode = config.query_mode
         self.__query_vectors: list[list[float]] = dataset.query_vectors
         self.__ground_truth_neighbors: list[list[int]] = dataset.ground_truth_neighbors
         self.__keyword_filters: Optional[list[str]] = dataset.keyword_filter
@@ -134,9 +134,7 @@ class HNSWQueryRunner:
         :return: Results of the query operation (see :class:`HNSWQueryRunnerResult`).
         """
         log.info("Start QueryRunner for client %s", type(self.__client).__name__)
-        mode_results: list[HNSWQueryModeResult] = []
-        for query_mode in self.__query_mode:
-            mode_results.append(self.__run_mode(query_mode))
+        mode_results: list[HNSWQueryModeResult] = [self.__run_mode(self.__query_mode)]
         return HNSWQueryRunnerResult(mode_results)
 
     def __run_mode(self, query_mode: QueryMode) -> HNSWQueryModeResult:

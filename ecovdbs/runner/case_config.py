@@ -59,20 +59,12 @@ class HNSWCase:
         dataset: The dataset to be used for the case (see :class:`Dataset`).
         hnsw_config: Configuration for the HNSW algorithm (see :class:`HNSWConfig`).
         index_time: The time at which the index is created (see :class:`IndexTime`).
-        query_modes: A list of query modes to be used (see :class:`QueryMode`).
+        query_mode: The query mode (see :class:`QueryMode`).
     """
     dataset: Dataset
     hnsw_config: HNSWConfig
     index_time: IndexTime
-    query_modes: list[QueryMode]
+    query_mode: QueryMode
 
 
-@dataclass(init=False)
-class TestCase(HNSWCase):
-    """
-    Test case class for running HNSW tasks with a specific dataset and configuration.
-    """
-    dataset = read_sift_small()
-    hnsw_config = HNSWConfig()
-    index_time = IndexTime.PRE_INDEX
-    query_modes = [QueryMode.QUERY]
+TEST_CASE = HNSWCase(read_sift_small(), HNSWConfig(), IndexTime.PRE_INDEX, QueryMode.QUERY)

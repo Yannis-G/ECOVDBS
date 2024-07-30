@@ -34,6 +34,6 @@ class ChromaHNSWTask(HNSWTask):
         self.client = ChromaClient(dimension=case.dataset.dimension, index_config=index_config)
         self.dataset = case.dataset
         index_time = case.index_time if case.index_time is IndexTime.NO_INDEX else IndexTime.NO_INDEX
-        self.insert_config = InsertConfig(index_time=index_time, query_modes=case.query_modes)
+        self.insert_config = InsertConfig(index_time=index_time, query_mode=case.query_mode)
         self.query_config = HNSWQueryConfig(ef_search=case.hnsw_config.ef_search, index_config=index_config,
-                                            query_modes=case.query_modes)
+                                            query_mode=case.query_mode)
