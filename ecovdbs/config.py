@@ -1,4 +1,5 @@
 import os
+from matplotlib import use as mpl_use
 
 
 def find_project_root(current_dir: str) -> str:
@@ -14,6 +15,9 @@ def find_project_root(current_dir: str) -> str:
         current_dir = os.path.dirname(current_dir)
     return current_dir
 
+
+# Set Matplotlib to use the Agg backend
+mpl_use('Agg')
 
 # Determine the base path of the project by finding the project root
 BASE_PATH = find_project_root(os.path.abspath(os.path.dirname(__file__)))

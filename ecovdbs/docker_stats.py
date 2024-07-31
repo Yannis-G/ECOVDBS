@@ -5,12 +5,8 @@ from datetime import datetime
 
 import docker
 import matplotlib.pyplot as plt
-from matplotlib import use as mpl_use
 
 from .config import PLOT_BASE_PATH
-
-# Set Matplotlib to use the Agg backend
-mpl_use('Agg')
 
 
 def get_memory_usage(container):
