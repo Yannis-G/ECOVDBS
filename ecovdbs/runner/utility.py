@@ -143,7 +143,6 @@ class MockBaseHNSWConfig(BaseHNSWConfig):
 
 
 def dict_to_dataclass(data: Any, cls: Any) -> Any:
-    print(cls, type(cls))
     if cls == BaseClient:
         return MockBaseClient(data)
     elif cls == BaseHNSWConfig:
