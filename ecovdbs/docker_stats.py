@@ -1,8 +1,16 @@
-import docker
+import os
 import threading
 import time
+from datetime import datetime
+
+import docker
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
+from matplotlib import use as mpl_use
+
+from .config import PLOT_BASE_PATH
+
+# Set Matplotlib to use the Agg backend
+mpl_use('Agg')
 
 
 def get_memory_usage(container):
@@ -23,7 +31,7 @@ def get_cpu_usage(container):
 
 
 class ContainerMonitor(threading.Thread):
-    def __init__(self, container_id, interval=.5):
+    def __init__(self, container_id, interval=.1):
         super().__init__()
         self.client = docker.from_env()
         self.container_id = container_id
@@ -48,8 +56,8 @@ class ContainerMonitor(threading.Thread):
     def stop(self):
         self.running = False
 
-    # TODO plot saving instead of showing
     def summarize_stats(self):
+        timestamp = time.strftime('%Y-%m-%d-%H-%M-%S')
         # Plot memory usage
         plt.figure(figsize=(12, 6))
         plt.plot(self.timestamps, [mem / (1024 ** 2) for mem in self.memory_usages], label='Memory Usage (MB)')
@@ -58,7 +66,8 @@ class ContainerMonitor(threading.Thread):
         plt.title(f'Memory Usage Over Time for Container {self.container_id}')
         plt.legend()
         plt.grid(True)
-        plt.show()
+        plt.savefig(os.path.join(PLOT_BASE_PATH, f"{timestamp}-{self.container_id}-MemoryUsage.png"))
+        plt.close()
 
         # Plot CPU usage
         plt.figure(figsize=(12, 6))
@@ -68,7 +77,8 @@ class ContainerMonitor(threading.Thread):
         plt.title(f'CPU Usage Over Time for Container {self.container_id}')
         plt.legend()
         plt.grid(True)
-        plt.show()
+        plt.savefig(os.path.join(PLOT_BASE_PATH, f"{timestamp}-{self.container_id}-CPUUsage.png"))
+        plt.close()
 
 
 container_mapper = {

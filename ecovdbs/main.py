@@ -4,7 +4,7 @@ from datetime import datetime
 from argparse import Namespace
 
 from .docker_stats import container_mapper, ContainerMonitor
-from .results.result import plot_query_time_recall
+from .results.result import plot_results
 from .runner.result_config import HNSWRunnerResult
 from .runner.utility import client_mapper, save_hnsw_runner_result
 from .runner.case_config import IndexTime, QueryMode, HNSWCase, HNSWConfig
@@ -132,19 +132,15 @@ def main() -> None:
 
     case: HNSWCase = HNSWCase(dataset, HNSWConfig(), index_time_value, query_mode)
 
-    now: datetime = datetime.now()
-    time: str = now.strftime("%Y-%m-%d-%H-%M")
     logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     logging.getLogger("ecovdbs.runner.runner").setLevel(logging.INFO)
 
-    # TODO: better result handling, all plots, aggregate results, save results and plots
     results: list[HNSWRunnerResult] = []
     for task, monitor in zip(client_tasks, container):
         monitor.start()
         runner: HNSWRunner = HNSWRunner(task(case))
         res: HNSWRunnerResult = runner.run()
-        # TODO plot handling
         monitor.stop()
         results.append(res)
         save_hnsw_runner_result(res)
-    plot_query_time_recall(results, time, False)
+    plot_results(results)
