@@ -6,6 +6,7 @@ from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Optional
 
+from .case_config import QueryMode
 from .chroma.chroma_task import ChromaHNSWTask
 from .milvus.milvus_task import MilvusHNSWTask
 from .redis.redis_task import RedisHNSWTask
@@ -89,3 +90,75 @@ def save_hnsw_runner_result(result: HNSWRunnerResult, path: Optional[str] = None
                             f"{time.strftime('%Y-%m-%d-%H-%M-%S')}-{type(result.client).__name__}-result.json")
     with open(path, 'w') as file:
         json.dump(dataclass_to_dict(result), file, indent=4)
+
+
+class MockBaseClient(BaseClient):
+
+    def __init__(self, name: str) -> None:
+        MockBaseClient.__name__ = name
+
+    def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
+        pass
+
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
+        pass
+
+    def create_index(self) -> None:
+        pass
+
+    def disk_storage(self) -> float:
+        pass
+
+    def index_storage(self) -> float:
+        pass
+
+    def load(self) -> None:
+        pass
+
+    def query(self, query: list[float], k: int) -> list[int]:
+        pass
+
+    def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
+        pass
+
+    def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
+        pass
+
+
+class MockBaseHNSWConfig(BaseHNSWConfig):
+
+    def __init__(self, index_param: dict[str, Any], search_param: dict[str, Any]) -> None:
+        self.index_param = index_param
+        self.search_param = search_param
+
+    def index_param(self) -> dict[str, Any]:
+        pass
+
+    def search_param(self) -> dict[str, Any]:
+        pass
+
+    def change_ef_search(self, ef: int) -> None:
+        pass
+
+
+def dict_to_dataclass(data: Any, cls: Any) -> Any:
+    print(cls, type(cls))
+    if cls == BaseClient:
+        return MockBaseClient(data)
+    elif cls == BaseHNSWConfig:
+        return MockBaseHNSWConfig(data["index_param"], data["search_param"])
+    elif cls == QueryMode:
+        return cls[data]
+    elif isinstance(data, dict):
+        fieldtypes = {f.name: f.type for f in cls.__dataclass_fields__.values()}
+        return cls(**{k: dict_to_dataclass(v, fieldtypes[k]) for k, v in data.items()})
+    elif isinstance(data, list):
+        return [dict_to_dataclass(item, cls.__args__[0]) for item in data]
+    return data
+
+
+def read_hnsw_runner_result(path: str) -> HNSWRunnerResult:
+    with open(path, 'r') as file:
+        data = json.load(file)
+    return dict_to_dataclass(data, HNSWRunnerResult)
