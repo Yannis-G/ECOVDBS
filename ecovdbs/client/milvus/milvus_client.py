@@ -55,9 +55,11 @@ class MilvusClient(BaseClient):
         ]
         schema: CollectionSchema = CollectionSchema(fields)
 
+        self.__starting_size: float = 0
         try:
             client = docker.from_env()
             self.__container: Container = client.containers.get(db_config.container_name)
+            self.__starting_size: float = self.disk_storage()
             # Delete all files in the persistence directory
             # self.__container.exec_run(f"sh -c 'rm -R -- {self.__persistence_directory}/*'")
         except NotFound | APIError:
@@ -98,7 +100,7 @@ class MilvusClient(BaseClient):
 
         :return: Disk storage used in MB.
         """
-        return bytes_to_mb(get_size_of(self.__persistence_directory, self.__container, log))
+        return bytes_to_mb(get_size_of(self.__persistence_directory, self.__container, log)) - self.__starting_size
 
     def index_storage(self):
         """
