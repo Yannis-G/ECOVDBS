@@ -1,17 +1,16 @@
 import argparse
 import logging
-from datetime import datetime
 from argparse import Namespace
 
+from .dataset.dataset import Dataset
+from .dataset.dataset_reader import dataset_mapper
 from .docker_stats import container_mapper, ContainerMonitor
 from .results.result import plot_results
-from .runner.result_config import HNSWRunnerResult
-from .runner.utility import client_mapper, save_hnsw_runner_result
 from .runner.case_config import IndexTime, QueryMode, HNSWCase, HNSWConfig
+from .runner.result_config import HNSWRunnerResult
 from .runner.runner import HNSWRunner
 from .runner.task_config import HNSWTask
-from .dataset.dataset_reader import dataset_mapper
-from .dataset.dataset import Dataset
+from .runner.utility import client_mapper, save_hnsw_runner_result
 
 
 def print_enum_keys(enum_class, enum_name: str) -> None:
