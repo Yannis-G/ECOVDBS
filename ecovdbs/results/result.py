@@ -7,11 +7,10 @@ from ..config import PLOT_BASE_PATH
 from ..runner.result_config import HNSWRunnerResult
 
 
-def plot_results(results: list[HNSWRunnerResult]) -> None:
+def plot_results(results: list[HNSWRunnerResult], timestamp: str = time.strftime('%Y-%m-%d-%H-%M-%S')) -> None:
     plots: list[tuple[plt.Figure, str]] = [plot_insert_time(results), plot_qps_recall(results),
                                            plot_query_time_recall(results), plot_index_size(results),
                                            plot_disk_size(results)]
-    timestamp = time.strftime('%Y-%m-%d-%H-%M-%S')
     for fig, title in plots:
         fig.savefig(os.path.join(PLOT_BASE_PATH, f"{timestamp}-{title}.png"))
         plt.close(fig)
