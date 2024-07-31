@@ -208,6 +208,7 @@ class HNSWQueryRunner:
         :param extended: List of extended parameters (e.g., keywords or distances).
         """
         for q, gt, e in tqdm.tqdm(zip(self.__query_vectors, self.__ground_truth_neighbors, extended)):
+            self.__k = len(gt)
             res, t = query_func(q, self.__k, e)
             recall = len(set(gt) & set(res)) / self.__k
             self.total_recall += recall
