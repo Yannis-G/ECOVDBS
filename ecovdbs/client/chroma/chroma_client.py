@@ -58,9 +58,12 @@ class ChromaClient(BaseClient):
         log.info("Chroma client initialized")
 
     def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
-        ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
         # self.__client.max_batch_size >> 41666
-        self.__collection.add(ids=ids, embeddings=embeddings, metadatas=metadata)
+        if len(embeddings) > self.__client.max_batch_size:
+            self.batch_insert(embeddings, metadata, start_id)
+        else:
+            ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
+            self.__collection.add(ids=ids, embeddings=embeddings, metadatas=metadata)
 
     def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
                      start_id: int = 0) -> None:

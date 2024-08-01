@@ -13,6 +13,10 @@ from ..utility import bytes_to_mb, get_size_of
 
 log = logging.getLogger(__name__)
 
+# Copied from VectorDBBench:
+# https://github.com/zilliztech/VectorDBBench/blob/main/vectordb_bench/backend/clients/milvus/milvus.py
+MILVUS_LOAD_REQS_SIZE = 1.5 * 1024 * 1024
+
 
 class MilvusClient(BaseClient):
     """
@@ -31,6 +35,10 @@ class MilvusClient(BaseClient):
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
         self.__collection_name: str = "ecovdbs"
+        # Copied from VectorDBBench:
+        # https://github.com/zilliztech/VectorDBBench/blob/main/vectordb_bench/backend/clients/milvus/milvus.py
+        self.__batch_size = int(MILVUS_LOAD_REQS_SIZE / (self.__dimension * 4))
+        self.__index_name: str = "index"
         self.__id_name: str = "id"
         self.__metadata_name: str = "metadata"
         self.__vector_name: str = "vector"
@@ -70,6 +78,29 @@ class MilvusClient(BaseClient):
         log.info("Milvus client initialized")
 
     def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
+        if len(embeddings) > self.__batch_size:
+            self.batch_insert(embeddings, metadata, start_id)
+        else:
+            data = self.__pre_insert(embeddings, metadata, start_id)
+            self.__collection.insert(data=data)
+            self.__collection.flush()
+
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
+        data = self.__pre_insert(embeddings, metadata, start_id)
+        for i in range(0, len(data), self.__batch_size):
+            self.__collection.insert(data=data[i:min(i + self.__batch_size, len(data))])
+        self.__collection.flush()
+
+    def __pre_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]], start_id: int) -> list[dict]:
+        """
+        Prepare data for insertion into the database.
+
+        :param embeddings: List of embeddings to insert.
+        :param metadata: List of metadata strings to insert. The length should match len(embeddings) if provided.
+        :param start_id: Index of the first inserted vector.
+        :return: A list of dictionaries containing the IDs, metadata, and vectors.
+        """
         log.info(f"Inserting {len(embeddings)} vectors into database")
         if not metadata or len(metadata) != len(embeddings):
             metadata = ["" for _ in range(len(embeddings))]
@@ -77,21 +108,16 @@ class MilvusClient(BaseClient):
         data = [{self.__id_name: start_id + i,
                  self.__metadata_name: metadata[i],
                  self.__vector_name: v} for i, v in enumerate(embeddings)]
-        self.__collection.insert(data=data)
-        self.__collection.flush()
 
-    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
-                     start_id: int = 0) -> None:
-        """
-        Not implemented.
-        """
-        # TODO implement
-        pass
+        return data
 
     def create_index(self) -> None:
         index_param: dict = self.__index_config.index_param()
         log.info(f"Creating index {self.__index_config.index_param()}")
-        self.__collection.create_index(self.__vector_name, index_param)
+        self.__collection.create_index(self.__vector_name, index_param, index_name=self.__index_name)
+        utility.wait_for_index_building_complete(self.__collection_name, self.__index_name)
+        progress = utility.index_building_progress(self.__collection_name, self.__index_name)
+        print(f"[Milvus] Create index {progress} for collection {self.__collection_name} successfully!!!")
 
     def disk_storage(self):
         """

@@ -3,6 +3,7 @@ from typing import Optional
 
 import numpy as np
 from redis import Redis
+from redis.client import Pipeline
 from redis.commands.search.field import VectorField, TextField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
@@ -32,6 +33,7 @@ class RedisClient(BaseClient):
         """
         self.__dimension: int = dimension
         self.__index_config: BaseIndexConfig = index_config
+        self.__batch_size = 1000
         self.__index_name: str = "ecovdbs"
         self.__metadata_name: str = "metadata"
         self.__vector_name: str = "vector"
@@ -48,24 +50,40 @@ class RedisClient(BaseClient):
         log.info("Redis client initialized")
 
     def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
-        log.info(f"Inserting {len(embeddings)} vectors into database")
-        pipeline = self.__client.pipeline()
-        if not metadata or len(metadata) != len(embeddings):
-            metadata = ["" for _ in range(len(embeddings))]
+        if len(embeddings) > self.__batch_size:
+            self.batch_insert(embeddings, metadata, start_id)
+        else:
+            pipeline, metadata = self.__pre_insert(len(embeddings), metadata)
+            for i, embedding in enumerate(embeddings):
+                pipeline.hset(str(i + start_id),
+                              mapping={self.__vector_name: np.array(embedding).astype(self.__vector_dtype).tobytes(),
+                                       self.__metadata_name: metadata[i]})
+            pipeline.execute()
 
+    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
+                     start_id: int = 0) -> None:
+        pipeline, metadata = self.__pre_insert(len(embeddings), metadata)
         for i, embedding in enumerate(embeddings):
             pipeline.hset(str(i + start_id),
                           mapping={self.__vector_name: np.array(embedding).astype(self.__vector_dtype).tobytes(),
                                    self.__metadata_name: metadata[i]})
+            if i % self.__batch_size == 0:
+                pipeline.execute()
         pipeline.execute()
 
-    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
-                     start_id: int = 0) -> None:
+    def __pre_insert(self, len_embeddings: int, metadata: Optional[list[str]]) -> tuple[Pipeline, list[str]]:
         """
-        Not implemented.
+        Prepares a pipeline for inserting embeddings into the database.
+
+        :param len_embeddings: The number of embeddings to insert.
+        :param metadata: The metadata for the embeddings.
+        :return: A pipeline for inserting the embeddings and the metadata.
         """
-        # TODO implement
-        pass
+        log.info(f"Inserting {len_embeddings} vectors into database")
+        pipeline = self.__client.pipeline()
+        if not metadata or len(metadata) != len_embeddings:
+            metadata = ["" for _ in range(len_embeddings)]
+        return pipeline, metadata
 
     def create_index(self) -> None:
         param = self.__index_config.index_param()
