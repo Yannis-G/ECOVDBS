@@ -12,6 +12,7 @@ from .milvus.milvus_task import MilvusHNSWTask
 from .redis.redis_task import RedisHNSWTask
 from .pgvector.pgvector_task import PgvectorHNSWTask
 from .result_config import HNSWRunnerResult
+from .mock_clients import client_mock_mapper
 from ..client.base_client import BaseClient
 from ..client.base_config import BaseHNSWConfig
 from ..config import RESULT_BASE_PATH
@@ -92,40 +93,6 @@ def save_hnsw_runner_result(result: HNSWRunnerResult, path: Optional[str] = None
         json.dump(dataclass_to_dict(result), file, indent=4)
 
 
-class MockBaseClient(BaseClient):
-
-    def __init__(self, name: str) -> None:
-        MockBaseClient.__name__ = name
-
-    def insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None, start_id: int = 0) -> None:
-        pass
-
-    def batch_insert(self, embeddings: list[list[float]], metadata: Optional[list[str]] = None,
-                     start_id: int = 0) -> None:
-        pass
-
-    def create_index(self) -> None:
-        pass
-
-    def disk_storage(self) -> float:
-        pass
-
-    def index_storage(self) -> float:
-        pass
-
-    def load(self) -> None:
-        pass
-
-    def query(self, query: list[float], k: int) -> list[int]:
-        pass
-
-    def filtered_query(self, query: list[float], k: int, keyword_filter: str) -> list[int]:
-        pass
-
-    def ranged_query(self, query: list[float], k: int, distance: float) -> list[int]:
-        pass
-
-
 class MockBaseHNSWConfig(BaseHNSWConfig):
 
     def __init__(self, index_param: dict[str, Any], search_param: dict[str, Any]) -> None:
@@ -144,7 +111,7 @@ class MockBaseHNSWConfig(BaseHNSWConfig):
 
 def dict_to_dataclass(data: Any, cls: Any) -> Any:
     if cls == BaseClient:
-        return MockBaseClient(data)
+        return client_mock_mapper[data]()
     elif cls == BaseHNSWConfig:
         return MockBaseHNSWConfig(data["index_param"], data["search_param"])
     elif cls == QueryMode:
