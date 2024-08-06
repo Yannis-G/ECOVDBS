@@ -1,4 +1,5 @@
 import logging
+import tqdm
 from typing import Optional
 
 import psycopg
@@ -80,7 +81,7 @@ class PgvectorClient(BaseClient):
                     vector_name=sql.Identifier(self.__vector_name),
                     metadata_name=sql.Identifier(self.__metadata_name))) as copy:
             copy.set_types(["bigint", "vector", "text"])
-            for i, embedding in enumerate(embeddings):
+            for i, embedding in tqdm.tqdm(enumerate(embeddings)):
                 copy.write_row((i + start_id, embedding, metadata[i]))
         self.__conn.commit()
 
