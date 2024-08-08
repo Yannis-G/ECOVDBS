@@ -34,7 +34,7 @@ def main() -> None:
         help="Print a list of all possible dataset values and exit"
     )
     parser.add_argument(
-        "--clients", nargs='+', required=True,
+        "--clients", nargs='+',
         help="List of client names (in lowercase). E.g., --clients chroma milvus"
     )
     parser.add_argument(

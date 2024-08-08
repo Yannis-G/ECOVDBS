@@ -253,3 +253,16 @@ def modify_payload(name: str, item_name: str) -> None:
     with open(payloads_path, 'w') as fd:
         for entry in payloads:
             fd.write(json.dumps(entry) + '\n')
+
+
+def cut_dimensions(dimensions: int, name: str) -> None:
+    """
+    Cut the dimensions of the vectors in the dataset to the specified number.
+
+    :param name: Name of the dataset directory.
+    :param dimensions: Number of dimensions to cut the vectors to.
+    """
+    vectors_path = os.path.join(DATA_BASE_PATH, name, "vectors.npy")
+    vectors = np.load(vectors_path, allow_pickle=False)
+    vectors = vectors[:, :dimensions]
+    np.save(vectors_path, vectors)

@@ -7,6 +7,7 @@ import h5py
 import numpy as np
 
 from .dataset import Dataset
+from .generators.generate import cut_dimensions
 from .generators.generate_arxiv_queries import modify_tests_and_payload_arxiv
 from .generators.generate_hnm_queries import generate_hnm_queries_from_file, modify_filters_and_payload_hnm
 from .generators.generate_random_datasets import (generate_random_100_keyword_datasets,
@@ -224,6 +225,7 @@ def download_h_and_m_clothes_2048_angular() -> None:
         log.info(
             "Modifying filters and payloads for H&M clothes dataset and generating HNM queries for H&M clothes dataset")
         modify_filters_and_payload_hnm(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+        cut_dimensions(2000, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
         generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
 
 
@@ -231,7 +233,7 @@ def read_h_and_m_clothes_2048_angular() -> Dataset:
     """
     Read the H&M clothes dataset.
     """
-    return _read_filtered_dataset_qdrant(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME, 2048, MetricType.COSINE)
+    return _read_filtered_dataset_qdrant(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME, 2000, MetricType.COSINE)
 
 
 def download_random_100_angular_keyword() -> None:
