@@ -22,12 +22,12 @@ Version of chroma docker image and chromadb python package must be the same.
 ## Install Redis in Docker
 
 ````bash
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 -v "$PWD"/volumes/redis/data:/data redis/redis-stack:latest
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 -v "$PWD"/volumes/redis/data:/data redis/redis-stack:7.2.0-v8
 ````
 
 ## Install pgvector in Docker
 
 ````bash
 docker volume create pgvector-data
-docker run --name pgvector -e POSTGRES_PASSWORD=pwd -p 5432:5432 -v pgvector-data:/var/lib/postgresql/data -d pgvector/pgvector:pg16
+docker run --name pgvector -e POSTGRES_PASSWORD=pwd -p 5432:5432 -v pgvector-data:/var/lib/postgresql/data -d pgvector/pgvector:0.6.0-pg16
  ````
