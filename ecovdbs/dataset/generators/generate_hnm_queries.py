@@ -15,8 +15,6 @@ from tqdm import tqdm
 from ...config import DATA_BASE_PATH
 from .generate import DataGenerator, modify_payload
 
-ITEM_NAME = 'product_type_name'
-
 
 def generate_query(filters: Dict[str, list]) -> Dict[str, Dict[str, str]]:
     """
@@ -123,15 +121,16 @@ def generate_hnm_queries_from_file(name: str = "hnm", num_queries: int = 10_000,
     )
 
 
-def modify_filters_and_payload_hnm(name: str = "hnm") -> None:
+def modify_filters_and_payload_hnm(name: str, item_name: str) -> None:
     """
     Modify filters and payloads for the dataset to only include 'product_type_name'.
 
     :param name: Name of the dataset directory.
+    :param item_name: Name of the item to keep in the filters and payloads.
     """
     filters_path = os.path.join(DATA_BASE_PATH, name, "filters.json")
     filters = json.load(open(filters_path))
-    filters = [item for item in filters if item['name'] == ITEM_NAME]
+    filters = [item for item in filters if item['name'] == item_name]
     json.dump(filters, open(filters_path, 'w'))
 
-    modify_payload(name, ITEM_NAME)
+    modify_payload(name, item_name)

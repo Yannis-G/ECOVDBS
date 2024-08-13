@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import shutil
 from typing import Callable
 
 import h5py
@@ -48,6 +49,8 @@ ARXIV_TITLES_384_ANGULAR_KEYWORD_DOWNLOAD_URL = "https://storage.googleapis.com/
 H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE = "hnm.tgz"
 H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME = "hnm"
 H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL = "https://storage.googleapis.com/ann-filtered-benchmark/datasets/hnm.tgz"
+H_AND_M_CLOTHES_LOW_FILTERING = "hnmLow"
+H_AND_M_CLOTHES_HIGH_FILTERING = "hnmHigh"
 
 RANDOM_100_ANGULAR_KEYWORD_NAME = "random_keywords_1m"
 RANDOM_100_ANGULAR_INT_NAME = "random_ints_1m"
@@ -212,7 +215,8 @@ def read_arxiv_titles_384_angular() -> Dataset:
     """
     Read the ArXiv titels dataset.
     """
-    return _read_filtered_dataset_qdrant(ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME, 384, MetricType.COSINE)
+    return _read_filtered_dataset_qdrant(download_arxiv_titles_384_angular, ARXIV_TITLES_384_ANGULAR_KEYWORD_NAME, 384,
+                                         MetricType.COSINE)
 
 
 def download_h_and_m_clothes_2048_angular() -> None:
@@ -222,18 +226,34 @@ def download_h_and_m_clothes_2048_angular() -> None:
     if not os.path.exists(os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)):
         _download_tar_file(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_FILE, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_DOWNLOAD_URL,
                            H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+        shutil.copytree(os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME),
+                        os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_LOW_FILTERING))
+        shutil.copytree(os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME),
+                        os.path.join(DATA_BASE_PATH, H_AND_M_CLOTHES_HIGH_FILTERING))
         log.info(
             "Modifying filters and payloads for H&M clothes dataset and generating HNM queries for H&M clothes dataset")
-        modify_filters_and_payload_hnm(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
-        cut_dimensions(2000, H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
-        generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME)
+        modify_filters_and_payload_hnm(H_AND_M_CLOTHES_LOW_FILTERING, "index_group_name")
+        modify_filters_and_payload_hnm(H_AND_M_CLOTHES_HIGH_FILTERING, "product_type_name")
+        cut_dimensions(2000, H_AND_M_CLOTHES_LOW_FILTERING)
+        cut_dimensions(2000, H_AND_M_CLOTHES_HIGH_FILTERING)
+        generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_LOW_FILTERING)
+        generate_hnm_queries_from_file(name=H_AND_M_CLOTHES_HIGH_FILTERING)
 
 
-def read_h_and_m_clothes_2048_angular() -> Dataset:
+def read_h_and_m_clothes_2048_angular_low() -> Dataset:
     """
     Read the H&M clothes dataset.
     """
-    return _read_filtered_dataset_qdrant(H_AND_M_CLOTHES_2048_ANGULAR_KEYWORD_NAME, 2000, MetricType.COSINE)
+    return _read_filtered_dataset_qdrant(download_h_and_m_clothes_2048_angular, H_AND_M_CLOTHES_LOW_FILTERING, 2000,
+                                         MetricType.COSINE)
+
+
+def read_h_and_m_clothes_2048_angular_high() -> Dataset:
+    """
+    Read the H&M clothes dataset.
+    """
+    return _read_filtered_dataset_qdrant(download_h_and_m_clothes_2048_angular, H_AND_M_CLOTHES_HIGH_FILTERING, 2000,
+                                         MetricType.COSINE)
 
 
 def download_random_100_angular_keyword() -> None:
@@ -249,7 +269,8 @@ def read_random_100_angular_keyword() -> Dataset:
     """
     Read random 100-dimensional keyword datasets.
     """
-    return _read_filtered_dataset_qdrant(RANDOM_100_ANGULAR_KEYWORD_NAME, 100, MetricType.COSINE)
+    return _read_filtered_dataset_qdrant(download_random_100_angular_keyword, RANDOM_100_ANGULAR_KEYWORD_NAME, 100,
+                                         MetricType.COSINE)
 
 
 def download_random_100_angular_int() -> None:
@@ -265,7 +286,8 @@ def read_random_100_angular_int() -> Dataset:
     """
     Read random 100-dimensional integer datasets.
     """
-    return _read_filtered_dataset_qdrant(RANDOM_100_ANGULAR_INT_NAME, 100, MetricType.COSINE)
+    return _read_filtered_dataset_qdrant(download_random_100_angular_int, RANDOM_100_ANGULAR_INT_NAME, 100,
+                                         MetricType.COSINE)
 
 
 def download_random_2048_angular_keyword() -> None:
@@ -281,7 +303,8 @@ def read_random_2048_angular_keyword() -> Dataset:
     """
     Read random 2048-dimensional keyword datasets.
     """
-    return _read_filtered_dataset_qdrant(RANDOM_2048_ANGULAR_KEYWORD_NAME, 2048, MetricType.COSINE)
+    return _read_filtered_dataset_qdrant(download_random_2048_angular_keyword, RANDOM_2048_ANGULAR_KEYWORD_NAME, 2048,
+                                         MetricType.COSINE)
 
 
 def download_random_2048_angular_int() -> None:
@@ -297,7 +320,8 @@ def read_random_2048_angular_int() -> Dataset:
     """
     Read random 2048-dimensional integer datasets.
     """
-    return _read_filtered_dataset_qdrant(RANDOM_2048_ANGULAR_INT_NAME, 2048, MetricType.COSINE)
+    return _read_filtered_dataset_qdrant(download_random_2048_angular_int, RANDOM_2048_ANGULAR_INT_NAME, 2048,
+                                         MetricType.COSINE)
 
 
 def _download_tar_file(file_name: str, url: str, name: str, create_dir: bool = True):
@@ -351,10 +375,12 @@ def _read_hdf5_file_ann_benchmark(download_func: Callable[[], None], file_name: 
                        f["neighbors"][()].tolist())
 
 
-def _read_filtered_dataset_qdrant(name: str, dimension: int, metric_type: MetricType) -> Dataset:
+def _read_filtered_dataset_qdrant(download_func: Callable[[], None], name: str, dimension: int,
+                                  metric_type: MetricType) -> Dataset:
     """
     Read a filtered dataset in the format of https://github.com/qdrant/ann-filtering-benchmark-datasets.
     """
+    download_func()
     vectors_path = os.path.join(DATA_BASE_PATH, name, "vectors.npy")
     vectors = np.load(vectors_path, allow_pickle=False).tolist()
 
@@ -394,7 +420,8 @@ dataset_mapper = {
     "FASHION_MNIST": read_fashion_mnist,
     "DEEP_IMAGE": read_deep_image,
     "ARXIV_TITLES": read_arxiv_titles_384_angular,
-    "H_AND_M_CLOTHES": read_h_and_m_clothes_2048_angular,
+    "HNM_LOW": read_h_and_m_clothes_2048_angular_low,
+    "HNM_HIGH": read_h_and_m_clothes_2048_angular_high,
     "RANDOM_100_KEYWORD": read_random_100_angular_keyword,
     "RANDOM_100_INT": read_random_100_angular_int,
     "RANDOM_2048_KEYWORD": read_random_2048_angular_keyword,
