@@ -392,7 +392,6 @@ def _read_filtered_dataset_qdrant(download_func: Callable[[], None], name: str, 
             payloads.append(list(data.values())[0])
 
     test_path = os.path.join(DATA_BASE_PATH, name, "tests.jsonl")
-    print(test_path)
     queries = []
     closest_ids = []
     filters = []
