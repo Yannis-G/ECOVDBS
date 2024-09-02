@@ -1,4 +1,5 @@
 import logging
+import tqdm
 from typing import Optional
 
 import chromadb
@@ -69,7 +70,7 @@ class ChromaClient(BaseClient):
                      start_id: int = 0) -> None:
         ids, metadata = self.__pre_insert(len(embeddings), metadata, start_id)
         batches = create_batches(api=self.__client, ids=ids, embeddings=embeddings, metadatas=metadata)
-        for batch in batches:
+        for batch in tqdm.tqdm(batches):
             self.__collection.add(ids=batch[0], embeddings=batch[1], metadatas=batch[2])
 
     def __pre_insert(self, len_embeddings: int, metadata: Optional[list[str]], start_id: int):
