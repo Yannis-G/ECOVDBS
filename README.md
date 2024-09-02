@@ -1,4 +1,4 @@
-# ECOVDBS
+# ECOVDBS - Experimental comparison of vector database systems
 
 ECOVDBS (Experimental comparison of vector database systems) is a Python-based framework designed to benchmark and compare the performance of various vector database systems. This tool provides an end-to-end solution to run extensive tests, analyze the results, and visualize the performance of different systems using customizable scenarios and datasets.
 
